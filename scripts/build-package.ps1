@@ -46,7 +46,7 @@ Ok ("payload\soda-amll.js（{0:N0} 字节）" -f (Get-Item -LiteralPath $distPlu
 Step "组装 release\$name"
 if (Test-Path -LiteralPath $stage) { Remove-Item -LiteralPath $stage -Recurse -Force }
 New-Item -ItemType Directory -Path $stage -Force | Out-Null
-foreach ($f in @('install.ps1', 'uninstall.ps1', 'AsarTool.ps1', 'Install.bat', 'Uninstall.bat', 'README.txt')) {
+foreach ($f in @('Setup.ps1', 'install.ps1', 'uninstall.ps1', 'AmllCommon.ps1', 'AsarTool.ps1', 'Install.bat', 'Uninstall.bat', 'README.txt')) {
   $src = Join-Path $installerSrc $f
   if (-not (Test-Path -LiteralPath $src)) { throw "缺少安装器文件：$src" }
   Copy-Item -LiteralPath $src -Destination $stage -Force
@@ -77,7 +77,7 @@ if (-not (Test-Path -LiteralPath $iexpress)) {
   Copy-Item -Path (Join-Path $stage 'payload\*') -Destination $flat -Force
   Remove-Item -LiteralPath (Join-Path $flat 'payload') -Recurse -Force
 
-  $files = @('Install.bat', 'Uninstall.bat', 'install.ps1', 'uninstall.ps1', 'AsarTool.ps1', 'README.txt', 'entry.js', 'soda-amll.js')
+  $files = @('Install.bat', 'Uninstall.bat', 'Setup.ps1', 'install.ps1', 'uninstall.ps1', 'AmllCommon.ps1', 'AsarTool.ps1', 'README.txt', 'entry.js', 'soda-amll.js')
   $strings = New-Object System.Collections.ArrayList
   $null = $strings.Add('[Strings]')
   $null = $strings.Add('InstallPrompt=')
@@ -87,8 +87,8 @@ if (-not (Test-Path -LiteralPath $iexpress)) {
   $null = $strings.Add('FriendlyName=Soda AMLL Lyrics')
   # 必须经 cmd.exe 启动：wextract 用 CreateProcess 执行 AppLaunched，
   # 而 CreateProcess 无法直接运行 .bat，会报「系统找不到指定的文件」。
-  # /sfx 让 Install.bat 知道自己在隐藏控制台里跑，改用弹窗反馈结果。
-  $null = $strings.Add('AppLaunched=cmd.exe /c Install.bat /sfx')
+  # Install.bat 会同步等图形界面关掉再退出，否则 wextract 会提前删掉解压目录。
+  $null = $strings.Add('AppLaunched=cmd.exe /c Install.bat')
   $null = $strings.Add('PostInstallCmd=<None>')
   $null = $strings.Add('AdminQuietInstCmd=')
   $null = $strings.Add('UserQuietInstCmd=')

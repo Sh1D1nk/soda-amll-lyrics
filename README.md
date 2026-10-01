@@ -18,6 +18,10 @@
 | :---: | :---: | :---: |
 | [![歌词页内设置](docs/images/settings-pane.png)](docs/images/settings-pane.png) | [![右键菜单](docs/images/menu.png)](docs/images/menu.png) | [![设置页插件标签](docs/images/app-settings.png)](docs/images/app-settings.png) |
 
+安装程序是图形界面的，会自动识别客户端版本并判断适配情况：
+
+[![安装程序](docs/images/setup-gui.png)](docs/images/setup-gui.png)
+
 ---
 
 ## 功能
@@ -65,7 +69,15 @@
 
 下载 `SodaAMLL-Lyrics-<版本>.zip`，解压后双击 `Install.bat`。
 
-两种方式都会自动查找汽水音乐安装目录；找不到时会提示你手动粘贴路径。装在 `C:\Program Files` 下会弹一次 UAC 提权。
+两种方式都会打开同一个图形界面：
+
+- 自动列出检测到的汽水音乐客户端，多个版本可以下拉切换
+- 显示客户端版本、安装位置、插件是否已安装（含插件版本）
+- 显示适配情况：`● 已实测适配` / `● 结构兼容，未实测 · 可能失效` / `● 不适配`
+- 「安装插件」与「卸载插件」两个按钮，下方日志区有完整过程输出
+- 自动找不到客户端时可以点「浏览…」手动选目录
+
+装在 `C:\Program Files` 下会弹一次 UAC 提权，点是；提权后图形界面会自动重新打开。
 
 装完重新打开汽水音乐，播放任意歌曲，右下角会出现「AMLL 歌词」悬浮按钮。
 
@@ -140,9 +152,15 @@
 
 ## 卸载
 
-运行 `Uninstall.bat`（或 `uninstall.ps1`），会用安装时留下的 `app.asar.orig` 还原客户端入口，并删除插件文件。
+双击 `Uninstall.bat`（同样会打开图形界面），点「卸载插件」。会用安装时留下的 `app.asar.orig` 还原客户端入口，并删除插件文件。
 
 如果 `app.asar.orig` 丢了，可以用汽水音乐自带的修复 / 重新安装功能还原客户端。
+
+命令行方式仍然可用：
+
+```powershell
+.\uninstall.ps1 -TargetDir "D:\Games\Soda Music"
+```
 
 ---
 
@@ -188,11 +206,13 @@ soda-amll-lyrics/
 │  └─ pixi-stub.js       AMLL 依赖的 pixi 模块桩，打包时 alias 掉
 ├─ build.mjs             esbuild 打包配置，输出 IIFE
 ├─ installer/
-│  ├─ install.ps1        安装：定位客户端 → 备份 → 重打包 asar → 投放插件
-│  ├─ uninstall.ps1      卸载：还原 asar → 删除插件文件
+│  ├─ Setup.ps1          图形界面：安装 / 卸载 / 版本 / 适配状态
+│  ├─ AmllCommon.ps1     共用逻辑：定位客户端、判断适配、安装、卸载
+│  ├─ install.ps1        命令行安装（复用 AmllCommon.ps1）
+│  ├─ uninstall.ps1      命令行卸载（复用 AmllCommon.ps1）
 │  ├─ AsarTool.ps1       asar 读取 / 重打包
-│  ├─ Install.bat        双击入口
-│  ├─ Uninstall.bat      双击入口
+│  ├─ Install.bat        双击入口 → 打开 Setup.ps1
+│  ├─ Uninstall.bat      双击入口 → 打开 Setup.ps1
 │  ├─ README.txt         随包使用说明
 │  └─ payload/
 │     ├─ entry.js        替换进 asar 的入口文件
@@ -207,15 +227,19 @@ soda-amll-lyrics/
 
 ## 常见问题
 
-**双击 `Install.bat` 一闪而过？**
+**双击 `Install.bat` 一闪而过 / 图形界面没出来？**
 脚本报错了。在该目录按住 Shift 右键 → 「在此处打开 PowerShell 窗口」，执行：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\install.ps1
+powershell -ExecutionPolicy Bypass -File .\Setup.ps1     # 直接开图形界面
+powershell -ExecutionPolicy Bypass -File .\install.ps1   # 命令行方式，能看到具体错误
 ```
 
 **提示找不到汽水音乐？**
-手动填安装目录，一般是 `%LOCALAPPDATA%\Programs\Soda Music\<版本号>\`。
+在图形界面点「浏览…」手动选目录，一般是 `%LOCALAPPDATA%\Programs\Soda Music\<版本号>\`。
+
+**适配情况那一栏怎么理解？**
+`已实测适配` 表示这个客户端版本验证过；`结构兼容，未实测` 表示结构上没问题但没测过，可能失效；`不适配` 就不要装了。
 
 **杀毒软件报毒？**
 安装脚本会改写 `app.asar`，这类行为容易被启发式误判。所有源码都在仓库里，可以自行审阅。
