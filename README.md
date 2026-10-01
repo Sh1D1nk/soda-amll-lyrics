@@ -10,6 +10,16 @@
 
 ---
 
+## 预览
+
+![歌词页](docs/images/lyric.png)
+
+| 歌词页内设置 | 右键菜单 | 设置页「插件」标签 |
+| :---: | :---: | :---: |
+| [![歌词页内设置](docs/images/settings-pane.png)](docs/images/settings-pane.png) | [![右键菜单](docs/images/menu.png)](docs/images/menu.png) | [![设置页插件标签](docs/images/app-settings.png)](docs/images/app-settings.png) |
+
+---
+
 ## 功能
 
 **歌词页**
@@ -189,6 +199,7 @@ soda-amll-lyrics/
 │     └─ soda-amll.js    构建产物
 ├─ scripts/
 │  └─ build-package.ps1  打 ZIP 与自解压 exe
+├─ docs/images/          README 截图
 └─ dist/                 构建输出
 ```
 
