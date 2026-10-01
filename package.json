@@ -1,0 +1,16 @@
+{
+  "name": "soda-amll-lyrics",
+  "version": "1.0.0",
+  "private": true,
+  "description": "汽水音乐 AMLL 歌词美化插件",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "package": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-package.ps1"
+  },
+  "dependencies": {
+    "@applemusic-like-lyrics/core": "^0.6.0",
+    "@applemusic-like-lyrics/lyric": "^1.1.0",
+    "esbuild": "^0.28.2"
+  }
+}

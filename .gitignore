@@ -1,0 +1,9 @@
+# 依赖
+node_modules/
+
+# 构建输出（installer/payload/soda-amll.js 是随包发布的构建产物，已提交）
+dist/
+
+# 打包输出
+release/
+*.7z
