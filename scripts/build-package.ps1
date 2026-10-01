@@ -85,7 +85,10 @@ if (-not (Test-Path -LiteralPath $iexpress)) {
   $null = $strings.Add('FinishMessage=')
   $null = $strings.Add("TargetName=$setupPath")
   $null = $strings.Add('FriendlyName=Soda AMLL Lyrics')
-  $null = $strings.Add('AppLaunched=Install.bat')
+  # 必须经 cmd.exe 启动：wextract 用 CreateProcess 执行 AppLaunched，
+  # 而 CreateProcess 无法直接运行 .bat，会报「系统找不到指定的文件」。
+  # /sfx 让 Install.bat 知道自己在隐藏控制台里跑，改用弹窗反馈结果。
+  $null = $strings.Add('AppLaunched=cmd.exe /c Install.bat /sfx')
   $null = $strings.Add('PostInstallCmd=<None>')
   $null = $strings.Add('AdminQuietInstCmd=')
   $null = $strings.Add('UserQuietInstCmd=')

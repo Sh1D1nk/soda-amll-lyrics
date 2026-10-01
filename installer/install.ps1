@@ -6,7 +6,9 @@
 
 [CmdletBinding()]
 param(
-  [string]$TargetDir
+  [string]$TargetDir,
+  # 由自解压安装包（Install.bat /sfx）传入：控制台是隐藏的，结果改用弹窗告知
+  [switch]$Sfx
 )
 
 $ErrorActionPreference = 'Stop'
@@ -24,7 +26,19 @@ function Say  { param($t, $c = 'Gray') Write-Host $t -ForegroundColor $c }
 function Step { param($t) Write-Host "==> $t" -ForegroundColor Cyan }
 function Ok   { param($t) Write-Host "    $t" -ForegroundColor Green }
 function Warn { param($t) Write-Host "    $t" -ForegroundColor Yellow }
-function Die  { param($t) Write-Host "`n[失败] $t" -ForegroundColor Red; Write-Host ''; exit 1 }
+
+# 自解压包跑在隐藏控制台里，只能用弹窗把结果告诉用户
+function Show-Gui {
+  param([string]$Text, [string]$Kind = 'Info')
+  if (-not $Sfx) { return }
+  try {
+    Add-Type -AssemblyName System.Windows.Forms
+    $icon = if ($Kind -eq 'Error') { [System.Windows.Forms.MessageBoxIcon]::Error } else { [System.Windows.Forms.MessageBoxIcon]::Information }
+    [System.Windows.Forms.MessageBox]::Show($Text, 'Soda AMLL Lyrics', [System.Windows.Forms.MessageBoxButtons]::OK, $icon) | Out-Null
+  } catch {}
+}
+
+function Die  { param($t) Write-Host "`n[失败] $t" -ForegroundColor Red; Write-Host ''; Show-Gui -Text $t -Kind 'Error'; exit 1 }
 
 function Test-Admin {
   $id = [Security.Principal.WindowsIdentity]::GetCurrent()
@@ -119,6 +133,8 @@ if (-not $appDir) { $appDir = Find-InstalledApp }
 
 if (-not $appDir) {
   Warn '没有自动找到汽水音乐。'
+  # 自解压包的控制台是隐藏的，Read-Host 会永远卡住，直接报错退出
+  if ($Sfx) { Die "没有自动找到汽水音乐。请改用 ZIP 包，解压后手动运行 Install.bat 并填写安装目录。" }
   Write-Host ''
   Write-Host '  请把汽水音乐的安装目录（里面能看到 resources 文件夹的那一层）粘贴进来，' -ForegroundColor White
   Write-Host '  直接回车退出。' -ForegroundColor White
@@ -142,13 +158,13 @@ if (-not (Test-CanWrite -Path $resDir)) {
     # 提权后的进程读不到压缩包临时目录，先把安装器落到一个稳定位置
     $stage = Join-Path $env:LOCALAPPDATA 'SodaAMLL\installer'
     $stageScript = Join-Path $stage 'install.ps1'
-    if (-not (Test-Path -LiteralPath $stageScript)) {
-      if (Test-Path -LiteralPath $stage) { Remove-Item -LiteralPath $stage -Recurse -Force }
-      New-Item -ItemType Directory -Path $stage -Force | Out-Null
-      Copy-Item -Path (Join-Path $here '*') -Destination $stage -Recurse -Force
-      Ok "安装器已暂存到 $stage"
-    }
+    # 每次都整份刷新，否则会用到上次留下的旧安装器（以及过期的 payload）
+    if (Test-Path -LiteralPath $stage) { Remove-Item -LiteralPath $stage -Recurse -Force -ErrorAction SilentlyContinue }
+    New-Item -ItemType Directory -Path $stage -Force | Out-Null
+    Copy-Item -Path (Join-Path $here '*') -Destination $stage -Recurse -Force
+    Ok "安装器已暂存到 $stage"
     $args = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$stageScript`"", '-TargetDir', "`"$appDir`"")
+    if ($Sfx) { $args += '-Sfx' }
     Start-Process -FilePath 'powershell.exe' -ArgumentList $args -Verb RunAs
     exit
   }
@@ -215,3 +231,8 @@ if ($running) {
 Write-Host ''
 Write-Host ("  卸载：运行 Uninstall.bat，或用 uninstall.ps1 -TargetDir `"{0}`"" -f $appDir) -ForegroundColor DarkGray
 Write-Host ''
+
+$gui = "安装完成。`n`n打开汽水音乐播放任意歌曲，歌词页会自动使用 AMLL 渲染。`n右下角「AMLL 歌词」悬浮按钮或 Ctrl+Alt+L 开关，Esc 关闭。`n歌词页右键 → 设置，或应用设置页底部的「插件」标签页，都能调参数。"
+if ($running) { $gui += "`n`n注意：汽水音乐正在运行，需要完全退出后重新打开才会生效。" }
+$gui += "`n`n卸载：运行同目录下的 Uninstall.bat"
+Show-Gui -Text $gui
