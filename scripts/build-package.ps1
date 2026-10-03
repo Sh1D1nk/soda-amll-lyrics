@@ -23,6 +23,8 @@ $name = "SodaAMLL-Lyrics-$Version"
 $stage = Join-Path $releaseDir $name
 $zipPath = Join-Path $releaseDir "$name.zip"
 $setupPath = Join-Path $releaseDir "$name-Setup.exe"
+$iconPath = Join-Path $installerSrc 'assets\app.ico'
+$setIconScript = Join-Path $root 'scripts\set-exe-icon.ps1'
 
 function Step { param($t) Write-Host "==> $t" -ForegroundColor Cyan }
 function Ok   { param($t) Write-Host "    $t" -ForegroundColor Green }
@@ -135,6 +137,15 @@ if (-not (Test-Path -LiteralPath $iexpress)) {
   Remove-Item -LiteralPath $flat -Recurse -Force
   if (-not (Test-Path -LiteralPath $tmpTarget)) { throw 'IExpress 没有产出 exe。' }
   Move-Item -LiteralPath $tmpTarget -Destination $setupPath -Force
+
+  # IExpress 的 SED 不支持自定义图标（只会套用 wextract 自带的），
+  # 所以打包完成后再直接改 PE 资源把图标写进去。
+  if (Test-Path -LiteralPath $iconPath) {
+    & $setIconScript -Exe $setupPath -Ico $iconPath
+  } else {
+    Write-Host "    没有 $iconPath，沿用 IExpress 默认图标。" -ForegroundColor Yellow
+  }
+
   Ok ("$setupPath（{0:N0} 字节）" -f (Get-Item -LiteralPath $setupPath).Length)
 }
 
