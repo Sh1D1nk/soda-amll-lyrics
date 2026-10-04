@@ -2231,6 +2231,2986 @@
   Mat4.perspective = Mat4.perspectiveNO;
   Mat4.ortho = Mat4.orthoNO;
 
+  // ../amll/node_modules/gl-matrix/dist/esm/vec3.js
+  var Vec3 = class _Vec3 extends Float32Array {
+    /**
+    * The number of bytes in a {@link Vec3}.
+    */
+    static BYTE_LENGTH = 3 * Float32Array.BYTES_PER_ELEMENT;
+    /**
+    * Create a {@link Vec3}.
+    */
+    constructor(...values) {
+      switch (values.length) {
+        case 3:
+          super(values);
+          break;
+        case 2:
+          super(values[0], values[1], 3);
+          break;
+        case 1: {
+          const v = values[0];
+          if (typeof v === "number") {
+            super([v, v, v]);
+          } else {
+            super(v, 0, 3);
+          }
+          break;
+        }
+        default:
+          super(3);
+          break;
+      }
+    }
+    //============
+    // Attributes
+    //============
+    // Getters and setters to make component access read better.
+    // These are likely to be a little bit slower than direct array access.
+    /**
+     * The x component of the vector. Equivalent to `this[0];`
+     * @category Vector components
+     */
+    get x() {
+      return this[0];
+    }
+    set x(value) {
+      this[0] = value;
+    }
+    /**
+     * The y component of the vector. Equivalent to `this[1];`
+     * @category Vector components
+     */
+    get y() {
+      return this[1];
+    }
+    set y(value) {
+      this[1] = value;
+    }
+    /**
+     * The z component of the vector. Equivalent to `this[2];`
+     * @category Vector components
+     */
+    get z() {
+      return this[2];
+    }
+    set z(value) {
+      this[2] = value;
+    }
+    // Alternate set of getters and setters in case this is being used to define
+    // a color.
+    /**
+     * The r component of the vector. Equivalent to `this[0];`
+     * @category Color components
+     */
+    get r() {
+      return this[0];
+    }
+    set r(value) {
+      this[0] = value;
+    }
+    /**
+     * The g component of the vector. Equivalent to `this[1];`
+     * @category Color components
+     */
+    get g() {
+      return this[1];
+    }
+    set g(value) {
+      this[1] = value;
+    }
+    /**
+     * The b component of the vector. Equivalent to `this[2];`
+     * @category Color components
+     */
+    get b() {
+      return this[2];
+    }
+    set b(value) {
+      this[2] = value;
+    }
+    /**
+     * The magnitude (length) of this.
+     * Equivalent to `Vec3.magnitude(this);`
+     *
+     * Magnitude is used because the `length` attribute is already defined by
+     * TypedArrays to mean the number of elements in the array.
+     */
+    get magnitude() {
+      const x = this[0];
+      const y = this[1];
+      const z = this[2];
+      return Math.sqrt(x * x + y * y + z * z);
+    }
+    /**
+     * Alias for {@link Vec3.magnitude}
+     */
+    get mag() {
+      return this.magnitude;
+    }
+    /**
+     * The squared magnitude (length) of `this`.
+     * Equivalent to `Vec3.squaredMagnitude(this);`
+     */
+    get squaredMagnitude() {
+      const x = this[0];
+      const y = this[1];
+      const z = this[2];
+      return x * x + y * y + z * z;
+    }
+    /**
+     * Alias for {@link Vec3.squaredMagnitude}
+     */
+    get sqrMag() {
+      return this.squaredMagnitude;
+    }
+    /**
+     * A string representation of `this`
+     * Equivalent to `Vec3.str(this);`
+     */
+    get str() {
+      return _Vec3.str(this);
+    }
+    //===================
+    // Instances methods
+    //===================
+    /**
+     * Copy the values from another {@link Vec3} into `this`.
+     *
+     * @param a the source vector
+     * @returns `this`
+     */
+    copy(a) {
+      this.set(a);
+      return this;
+    }
+    /**
+     * Adds a {@link Vec3} to `this`.
+     * Equivalent to `Vec3.add(this, this, b);`
+     *
+     * @param b - The vector to add to `this`
+     * @returns `this`
+     */
+    add(b) {
+      this[0] += b[0];
+      this[1] += b[1];
+      this[2] += b[2];
+      return this;
+    }
+    /**
+     * Subtracts a {@link Vec3} from `this`.
+     * Equivalent to `Vec3.subtract(this, this, b);`
+     *
+     * @param b - The vector to subtract from `this`
+     * @returns `this`
+     */
+    subtract(b) {
+      this[0] -= b[0];
+      this[1] -= b[1];
+      this[2] -= b[2];
+      return this;
+    }
+    /**
+     * Alias for {@link Vec3.subtract}
+     */
+    sub(b) {
+      return this;
+    }
+    /**
+     * Multiplies `this` by a {@link Vec3}.
+     * Equivalent to `Vec3.multiply(this, this, b);`
+     *
+     * @param b - The vector to multiply `this` by
+     * @returns `this`
+     */
+    multiply(b) {
+      this[0] *= b[0];
+      this[1] *= b[1];
+      this[2] *= b[2];
+      return this;
+    }
+    /**
+     * Alias for {@link Vec3.multiply}
+     */
+    mul(b) {
+      return this;
+    }
+    /**
+     * Divides `this` by a {@link Vec3}.
+     * Equivalent to `Vec3.divide(this, this, b);`
+     *
+     * @param b - The vector to divide `this` by
+     * @returns `this`
+     */
+    divide(b) {
+      this[0] /= b[0];
+      this[1] /= b[1];
+      this[2] /= b[2];
+      return this;
+    }
+    /**
+     * Alias for {@link Vec3.divide}
+     */
+    div(b) {
+      return this;
+    }
+    /**
+     * Scales `this` by a scalar number.
+     * Equivalent to `Vec3.scale(this, this, b);`
+     *
+     * @param b - Amount to scale `this` by
+     * @returns `this`
+     */
+    scale(b) {
+      this[0] *= b;
+      this[1] *= b;
+      this[2] *= b;
+      return this;
+    }
+    /**
+     * Calculates `this` scaled by a scalar value then adds the result to `this`.
+     * Equivalent to `Vec3.scaleAndAdd(this, this, b, scale);`
+     *
+     * @param b - The vector to add to `this`
+     * @param scale - The amount to scale `b` by before adding
+     * @returns `this`
+     */
+    scaleAndAdd(b, scale) {
+      this[0] += b[0] * scale;
+      this[1] += b[1] * scale;
+      this[2] += b[2] * scale;
+      return this;
+    }
+    /**
+     * Calculates the euclidian distance between another {@link Vec3} and `this`.
+     * Equivalent to `Vec3.distance(this, b);`
+     *
+     * @param b - The vector to calculate the distance to
+     * @returns Distance between `this` and `b`
+     */
+    distance(b) {
+      return _Vec3.distance(this, b);
+    }
+    /**
+     * Alias for {@link Vec3.distance}
+     */
+    dist(b) {
+      return 0;
+    }
+    /**
+     * Calculates the squared euclidian distance between another {@link Vec3} and `this`.
+     * Equivalent to `Vec3.squaredDistance(this, b);`
+     *
+     * @param b The vector to calculate the squared distance to
+     * @returns Squared distance between `this` and `b`
+     */
+    squaredDistance(b) {
+      return _Vec3.squaredDistance(this, b);
+    }
+    /**
+     * Alias for {@link Vec3.squaredDistance}
+     */
+    sqrDist(b) {
+      return 0;
+    }
+    /**
+     * Negates the components of `this`.
+     * Equivalent to `Vec3.negate(this, this);`
+     *
+     * @returns `this`
+     */
+    negate() {
+      this[0] *= -1;
+      this[1] *= -1;
+      this[2] *= -1;
+      return this;
+    }
+    /**
+     * Inverts the components of `this`.
+     * Equivalent to `Vec3.inverse(this, this);`
+     *
+     * @returns `this`
+     */
+    invert() {
+      this[0] = 1 / this[0];
+      this[1] = 1 / this[1];
+      this[2] = 1 / this[2];
+      return this;
+    }
+    /**
+     * Sets each component of `this` to it's absolute value.
+     * Equivalent to `Vec3.abs(this, this);`
+     *
+     * @returns `this`
+     */
+    abs() {
+      this[0] = Math.abs(this[0]);
+      this[1] = Math.abs(this[1]);
+      this[2] = Math.abs(this[2]);
+      return this;
+    }
+    /**
+     * Calculates the dot product of this and another {@link Vec3}.
+     * Equivalent to `Vec3.dot(this, b);`
+     *
+     * @param b - The second operand
+     * @returns Dot product of `this` and `b`
+     */
+    dot(b) {
+      return this[0] * b[0] + this[1] * b[1] + this[2] * b[2];
+    }
+    /**
+     * Normalize `this`.
+     * Equivalent to `Vec3.normalize(this, this);`
+     *
+     * @returns `this`
+     */
+    normalize() {
+      return _Vec3.normalize(this, this);
+    }
+    //================
+    // Static methods
+    //================
+    /**
+     * Creates a new, empty vec3
+     * @category Static
+     *
+     * @returns a new 3D vector
+     */
+    static create() {
+      return new _Vec3();
+    }
+    /**
+     * Creates a new vec3 initialized with values from an existing vector
+     * @category Static
+     *
+     * @param a - vector to clone
+     * @returns a new 3D vector
+     */
+    static clone(a) {
+      return new _Vec3(a);
+    }
+    /**
+     * Calculates the magnitude (length) of a {@link Vec3}
+     * @category Static
+     *
+     * @param a - Vector to calculate magnitude of
+     * @returns Magnitude of a
+     */
+    static magnitude(a) {
+      let x = a[0];
+      let y = a[1];
+      let z = a[2];
+      return Math.sqrt(x * x + y * y + z * z);
+    }
+    /**
+     * Alias for {@link Vec3.magnitude}
+     * @category Static
+     */
+    static mag(a) {
+      return 0;
+    }
+    /**
+     * Alias for {@link Vec3.magnitude}
+     * @category Static
+     * @deprecated Use {@link Vec3.magnitude} to avoid conflicts with builtin `length` methods/attribs
+     *
+     * @param a - vector to calculate length of
+     * @returns length of a
+     */
+    // @ts-ignore: Length conflicts with Function.length
+    static length(a) {
+      return 0;
+    }
+    /**
+     * Alias for {@link Vec3.magnitude}
+     * @category Static
+     * @deprecated Use {@link Vec3.mag}
+     */
+    static len(a) {
+      return 0;
+    }
+    /**
+     * Creates a new vec3 initialized with the given values
+     * @category Static
+     *
+     * @param x - X component
+     * @param y - Y component
+     * @param z - Z component
+     * @returns a new 3D vector
+     */
+    static fromValues(x, y, z) {
+      return new _Vec3(x, y, z);
+    }
+    /**
+     * Copy the values from one vec3 to another
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - the source vector
+     * @returns `out`
+     */
+    static copy(out, a) {
+      out[0] = a[0];
+      out[1] = a[1];
+      out[2] = a[2];
+      return out;
+    }
+    /**
+     * Set the components of a vec3 to the given values
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param x - X component
+     * @param y - Y component
+     * @param z - Z component
+     * @returns `out`
+     */
+    static set(out, x, y, z) {
+      out[0] = x;
+      out[1] = y;
+      out[2] = z;
+      return out;
+    }
+    /**
+     * Adds two {@link Vec3}s
+     * @category Static
+     *
+     * @param out - The receiving vector
+     * @param a - The first operand
+     * @param b - The second operand
+     * @returns `out`
+     */
+    static add(out, a, b) {
+      out[0] = a[0] + b[0];
+      out[1] = a[1] + b[1];
+      out[2] = a[2] + b[2];
+      return out;
+    }
+    /**
+     * Subtracts vector b from vector a
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - the first operand
+     * @param b - the second operand
+     * @returns `out`
+     */
+    static subtract(out, a, b) {
+      out[0] = a[0] - b[0];
+      out[1] = a[1] - b[1];
+      out[2] = a[2] - b[2];
+      return out;
+    }
+    /**
+     * Alias for {@link Vec3.subtract}
+     * @category Static
+     */
+    static sub(out, a, b) {
+      return [0, 0, 0];
+    }
+    /**
+     * Multiplies two vec3's
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - the first operand
+     * @param b - the second operand
+     * @returns `out`
+     */
+    static multiply(out, a, b) {
+      out[0] = a[0] * b[0];
+      out[1] = a[1] * b[1];
+      out[2] = a[2] * b[2];
+      return out;
+    }
+    /**
+     * Alias for {@link Vec3.multiply}
+     * @category Static
+     */
+    static mul(out, a, b) {
+      return [0, 0, 0];
+    }
+    /**
+     * Divides two vec3's
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - the first operand
+     * @param b - the second operand
+     * @returns `out`
+     */
+    static divide(out, a, b) {
+      out[0] = a[0] / b[0];
+      out[1] = a[1] / b[1];
+      out[2] = a[2] / b[2];
+      return out;
+    }
+    /**
+     * Alias for {@link Vec3.divide}
+     * @category Static
+     */
+    static div(out, a, b) {
+      return [0, 0, 0];
+    }
+    /**
+     * Math.ceil the components of a vec3
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - vector to ceil
+     * @returns `out`
+     */
+    static ceil(out, a) {
+      out[0] = Math.ceil(a[0]);
+      out[1] = Math.ceil(a[1]);
+      out[2] = Math.ceil(a[2]);
+      return out;
+    }
+    /**
+     * Math.floor the components of a vec3
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - vector to floor
+     * @returns `out`
+     */
+    static floor(out, a) {
+      out[0] = Math.floor(a[0]);
+      out[1] = Math.floor(a[1]);
+      out[2] = Math.floor(a[2]);
+      return out;
+    }
+    /**
+     * Returns the minimum of two vec3's
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - the first operand
+     * @param b - the second operand
+     * @returns `out`
+     */
+    static min(out, a, b) {
+      out[0] = Math.min(a[0], b[0]);
+      out[1] = Math.min(a[1], b[1]);
+      out[2] = Math.min(a[2], b[2]);
+      return out;
+    }
+    /**
+     * Returns the maximum of two vec3's
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - the first operand
+     * @param b - the second operand
+     * @returns `out`
+     */
+    static max(out, a, b) {
+      out[0] = Math.max(a[0], b[0]);
+      out[1] = Math.max(a[1], b[1]);
+      out[2] = Math.max(a[2], b[2]);
+      return out;
+    }
+    /**
+     * symmetric round the components of a vec3
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - vector to round
+     * @returns `out`
+     */
+    /*static round(out: Vec3Like, a: Readonly<Vec3Like>): Vec3Like {
+      out[0] = glMatrix.round(a[0]);
+      out[1] = glMatrix.round(a[1]);
+      out[2] = glMatrix.round(a[2]);
+      return out;
+    }*/
+    /**
+     * Scales a vec3 by a scalar number
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - the vector to scale
+     * @param scale - amount to scale the vector by
+     * @returns `out`
+     */
+    static scale(out, a, scale) {
+      out[0] = a[0] * scale;
+      out[1] = a[1] * scale;
+      out[2] = a[2] * scale;
+      return out;
+    }
+    /**
+     * Adds two vec3's after scaling the second operand by a scalar value
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - the first operand
+     * @param b - the second operand
+     * @param scale - the amount to scale b by before adding
+     * @returns `out`
+     */
+    static scaleAndAdd(out, a, b, scale) {
+      out[0] = a[0] + b[0] * scale;
+      out[1] = a[1] + b[1] * scale;
+      out[2] = a[2] + b[2] * scale;
+      return out;
+    }
+    /**
+     * Calculates the euclidian distance between two vec3's
+     * @category Static
+     *
+     * @param a - the first operand
+     * @param b - the second operand
+     * @returns distance between a and b
+     */
+    static distance(a, b) {
+      const x = b[0] - a[0];
+      const y = b[1] - a[1];
+      const z = b[2] - a[2];
+      return Math.sqrt(x * x + y * y + z * z);
+    }
+    /**
+     * Alias for {@link Vec3.distance}
+     */
+    static dist(a, b) {
+      return 0;
+    }
+    /**
+     * Calculates the squared euclidian distance between two vec3's
+     * @category Static
+     *
+     * @param a - the first operand
+     * @param b - the second operand
+     * @returns squared distance between a and b
+     */
+    static squaredDistance(a, b) {
+      const x = b[0] - a[0];
+      const y = b[1] - a[1];
+      const z = b[2] - a[2];
+      return x * x + y * y + z * z;
+    }
+    /**
+     * Alias for {@link Vec3.squaredDistance}
+     */
+    static sqrDist(a, b) {
+      return 0;
+    }
+    /**
+     * Calculates the squared length of a vec3
+     * @category Static
+     *
+     * @param a - vector to calculate squared length of
+     * @returns squared length of a
+     */
+    static squaredLength(a) {
+      const x = a[0];
+      const y = a[1];
+      const z = a[2];
+      return x * x + y * y + z * z;
+    }
+    /**
+     * Alias for {@link Vec3.squaredLength}
+     */
+    static sqrLen(a, b) {
+      return 0;
+    }
+    /**
+     * Negates the components of a vec3
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - vector to negate
+     * @returns `out`
+     */
+    static negate(out, a) {
+      out[0] = -a[0];
+      out[1] = -a[1];
+      out[2] = -a[2];
+      return out;
+    }
+    /**
+     * Returns the inverse of the components of a vec3
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - vector to invert
+     * @returns `out`
+     */
+    static inverse(out, a) {
+      out[0] = 1 / a[0];
+      out[1] = 1 / a[1];
+      out[2] = 1 / a[2];
+      return out;
+    }
+    /**
+     * Returns the absolute value of the components of a {@link Vec3}
+     * @category Static
+     *
+     * @param out - The receiving vector
+     * @param a - Vector to compute the absolute values of
+     * @returns `out`
+     */
+    static abs(out, a) {
+      out[0] = Math.abs(a[0]);
+      out[1] = Math.abs(a[1]);
+      out[2] = Math.abs(a[2]);
+      return out;
+    }
+    /**
+     * Normalize a vec3
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - vector to normalize
+     * @returns `out`
+     */
+    static normalize(out, a) {
+      const x = a[0];
+      const y = a[1];
+      const z = a[2];
+      let len = x * x + y * y + z * z;
+      if (len > 0) {
+        len = 1 / Math.sqrt(len);
+      }
+      out[0] = a[0] * len;
+      out[1] = a[1] * len;
+      out[2] = a[2] * len;
+      return out;
+    }
+    /**
+     * Calculates the dot product of two vec3's
+     * @category Static
+     *
+     * @param a - the first operand
+     * @param b - the second operand
+     * @returns dot product of a and b
+     */
+    static dot(a, b) {
+      return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+    }
+    /**
+     * Computes the cross product of two vec3's
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - the first operand
+     * @param b - the second operand
+     * @returns `out`
+     */
+    static cross(out, a, b) {
+      const ax = a[0], ay = a[1], az = a[2];
+      const bx = b[0], by = b[1], bz = b[2];
+      out[0] = ay * bz - az * by;
+      out[1] = az * bx - ax * bz;
+      out[2] = ax * by - ay * bx;
+      return out;
+    }
+    /**
+     * Performs a linear interpolation between two vec3's
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - the first operand
+     * @param b - the second operand
+     * @param t - interpolation amount, in the range [0-1], between the two inputs
+     * @returns `out`
+     */
+    static lerp(out, a, b, t) {
+      const ax = a[0];
+      const ay = a[1];
+      const az = a[2];
+      out[0] = ax + t * (b[0] - ax);
+      out[1] = ay + t * (b[1] - ay);
+      out[2] = az + t * (b[2] - az);
+      return out;
+    }
+    /**
+     * Performs a spherical linear interpolation between two vec3's
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - the first operand
+     * @param b - the second operand
+     * @param t - interpolation amount, in the range [0-1], between the two inputs
+     * @returns `out`
+     */
+    static slerp(out, a, b, t) {
+      const angle = Math.acos(Math.min(Math.max(_Vec3.dot(a, b), -1), 1));
+      const sinTotal = Math.sin(angle);
+      const ratioA = Math.sin((1 - t) * angle) / sinTotal;
+      const ratioB = Math.sin(t * angle) / sinTotal;
+      out[0] = ratioA * a[0] + ratioB * b[0];
+      out[1] = ratioA * a[1] + ratioB * b[1];
+      out[2] = ratioA * a[2] + ratioB * b[2];
+      return out;
+    }
+    /**
+     * Performs a hermite interpolation with two control points
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - the first operand
+     * @param b - the second operand
+     * @param c - the third operand
+     * @param d - the fourth operand
+     * @param t - interpolation amount, in the range [0-1], between the two inputs
+     * @returns `out`
+     */
+    static hermite(out, a, b, c, d, t) {
+      const factorTimes2 = t * t;
+      const factor1 = factorTimes2 * (2 * t - 3) + 1;
+      const factor2 = factorTimes2 * (t - 2) + t;
+      const factor3 = factorTimes2 * (t - 1);
+      const factor4 = factorTimes2 * (3 - 2 * t);
+      out[0] = a[0] * factor1 + b[0] * factor2 + c[0] * factor3 + d[0] * factor4;
+      out[1] = a[1] * factor1 + b[1] * factor2 + c[1] * factor3 + d[1] * factor4;
+      out[2] = a[2] * factor1 + b[2] * factor2 + c[2] * factor3 + d[2] * factor4;
+      return out;
+    }
+    /**
+     * Performs a bezier interpolation with two control points
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - the first operand
+     * @param b - the second operand
+     * @param c - the third operand
+     * @param d - the fourth operand
+     * @param t - interpolation amount, in the range [0-1], between the two inputs
+     * @returns `out`
+     */
+    static bezier(out, a, b, c, d, t) {
+      const inverseFactor = 1 - t;
+      const inverseFactorTimesTwo = inverseFactor * inverseFactor;
+      const factorTimes2 = t * t;
+      const factor1 = inverseFactorTimesTwo * inverseFactor;
+      const factor2 = 3 * t * inverseFactorTimesTwo;
+      const factor3 = 3 * factorTimes2 * inverseFactor;
+      const factor4 = factorTimes2 * t;
+      out[0] = a[0] * factor1 + b[0] * factor2 + c[0] * factor3 + d[0] * factor4;
+      out[1] = a[1] * factor1 + b[1] * factor2 + c[1] * factor3 + d[1] * factor4;
+      out[2] = a[2] * factor1 + b[2] * factor2 + c[2] * factor3 + d[2] * factor4;
+      return out;
+    }
+    /**
+     * Generates a random vector with the given scale
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param {Number} [scale] Length of the resulting vector. If omitted, a unit vector will be returned
+     * @returns `out`
+     */
+    /*static random(out: Vec3Like, scale) {
+        scale = scale === undefined ? 1.0 : scale;
+    
+        let r = glMatrix.RANDOM() * 2.0 * Math.PI;
+        let z = glMatrix.RANDOM() * 2.0 - 1.0;
+        let zScale = Math.sqrt(1.0 - z * z) * scale;
+    
+        out[0] = Math.cos(r) * zScale;
+        out[1] = Math.sin(r) * zScale;
+        out[2] = z * scale;
+        return out;
+      }*/
+    /**
+     * Transforms the vec3 with a mat4.
+     * 4th vector component is implicitly '1'
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - the vector to transform
+     * @param m - matrix to transform with
+     * @returns `out`
+     */
+    static transformMat4(out, a, m) {
+      const x = a[0], y = a[1], z = a[2];
+      const w = m[3] * x + m[7] * y + m[11] * z + m[15] || 1;
+      out[0] = (m[0] * x + m[4] * y + m[8] * z + m[12]) / w;
+      out[1] = (m[1] * x + m[5] * y + m[9] * z + m[13]) / w;
+      out[2] = (m[2] * x + m[6] * y + m[10] * z + m[14]) / w;
+      return out;
+    }
+    /**
+     * Transforms the vec3 with a mat3.
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - the vector to transform
+     * @param m - the 3x3 matrix to transform with
+     * @returns `out`
+     */
+    static transformMat3(out, a, m) {
+      let x = a[0], y = a[1], z = a[2];
+      out[0] = x * m[0] + y * m[3] + z * m[6];
+      out[1] = x * m[1] + y * m[4] + z * m[7];
+      out[2] = x * m[2] + y * m[5] + z * m[8];
+      return out;
+    }
+    /**
+     * Transforms the vec3 with a quat
+     * Can also be used for dual quaternions. (Multiply it with the real part)
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - the vector to transform
+     * @param q - quaternion to transform with
+     * @returns `out`
+     */
+    static transformQuat(out, a, q) {
+      const qx = q[0];
+      const qy = q[1];
+      const qz = q[2];
+      const w2 = q[3] * 2;
+      const x = a[0];
+      const y = a[1];
+      const z = a[2];
+      const uvx = qy * z - qz * y;
+      const uvy = qz * x - qx * z;
+      const uvz = qx * y - qy * x;
+      const uuvx = (qy * uvz - qz * uvy) * 2;
+      const uuvy = (qz * uvx - qx * uvz) * 2;
+      const uuvz = (qx * uvy - qy * uvx) * 2;
+      out[0] = x + uvx * w2 + uuvx;
+      out[1] = y + uvy * w2 + uuvy;
+      out[2] = z + uvz * w2 + uuvz;
+      return out;
+    }
+    /**
+     * Rotate a 3D vector around the x-axis
+     * @param out - The receiving vec3
+     * @param a - The vec3 point to rotate
+     * @param b - The origin of the rotation
+     * @param rad - The angle of rotation in radians
+     * @returns `out`
+     */
+    static rotateX(out, a, b, rad) {
+      const by = b[1];
+      const bz = b[2];
+      const py = a[1] - by;
+      const pz = a[2] - bz;
+      out[0] = a[0];
+      out[1] = py * Math.cos(rad) - pz * Math.sin(rad) + by;
+      out[2] = py * Math.sin(rad) + pz * Math.cos(rad) + bz;
+      return out;
+    }
+    /**
+     * Rotate a 3D vector around the y-axis
+     * @param out - The receiving vec3
+     * @param a - The vec3 point to rotate
+     * @param b - The origin of the rotation
+     * @param rad - The angle of rotation in radians
+     * @returns `out`
+     */
+    static rotateY(out, a, b, rad) {
+      const bx = b[0];
+      const bz = b[2];
+      const px = a[0] - bx;
+      const pz = a[2] - bz;
+      out[0] = pz * Math.sin(rad) + px * Math.cos(rad) + bx;
+      out[1] = a[1];
+      out[2] = pz * Math.cos(rad) - px * Math.sin(rad) + bz;
+      return out;
+    }
+    /**
+     * Rotate a 3D vector around the z-axis
+     * @param out - The receiving vec3
+     * @param a - The vec3 point to rotate
+     * @param b - The origin of the rotation
+     * @param rad - The angle of rotation in radians
+     * @returns `out`
+     */
+    static rotateZ(out, a, b, rad) {
+      const bx = b[0];
+      const by = b[1];
+      const px = a[0] - bx;
+      const py = a[1] - by;
+      out[0] = px * Math.cos(rad) - py * Math.sin(rad) + bx;
+      out[1] = px * Math.sin(rad) + py * Math.cos(rad) + by;
+      out[2] = b[2];
+      return out;
+    }
+    /**
+     * Get the angle between two 3D vectors
+     * @param a - The first operand
+     * @param b - The second operand
+     * @returns The angle in radians
+     */
+    static angle(a, b) {
+      const ax = a[0];
+      const ay = a[1];
+      const az = a[2];
+      const bx = b[0];
+      const by = b[1];
+      const bz = b[2];
+      const mag = Math.sqrt((ax * ax + ay * ay + az * az) * (bx * bx + by * by + bz * bz));
+      const cosine = mag && _Vec3.dot(a, b) / mag;
+      return Math.acos(Math.min(Math.max(cosine, -1), 1));
+    }
+    /**
+     * Set the components of a vec3 to zero
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @returns `out`
+     */
+    static zero(out) {
+      out[0] = 0;
+      out[1] = 0;
+      out[2] = 0;
+      return out;
+    }
+    /**
+     * Returns a string representation of a vector
+     * @category Static
+     *
+     * @param a - vector to represent as a string
+     * @returns string representation of the vector
+     */
+    static str(a) {
+      return `Vec3(${a.join(", ")})`;
+    }
+    /**
+     * Returns whether or not the vectors have exactly the same elements in the same position (when compared with ===)
+     * @category Static
+     *
+     * @param a - The first vector.
+     * @param b - The second vector.
+     * @returns True if the vectors are equal, false otherwise.
+     */
+    static exactEquals(a, b) {
+      return a[0] === b[0] && a[1] === b[1] && a[2] === b[2];
+    }
+    /**
+     * Returns whether or not the vectors have approximately the same elements in the same position.
+     * @category Static
+     *
+     * @param a - The first vector.
+     * @param b - The second vector.
+     * @returns True if the vectors are equal, false otherwise.
+     */
+    static equals(a, b) {
+      const a0 = a[0];
+      const a1 = a[1];
+      const a2 = a[2];
+      const b0 = b[0];
+      const b1 = b[1];
+      const b2 = b[2];
+      return Math.abs(a0 - b0) <= EPSILON * Math.max(1, Math.abs(a0), Math.abs(b0)) && Math.abs(a1 - b1) <= EPSILON * Math.max(1, Math.abs(a1), Math.abs(b1)) && Math.abs(a2 - b2) <= EPSILON * Math.max(1, Math.abs(a2), Math.abs(b2));
+    }
+  };
+  Vec3.prototype.sub = Vec3.prototype.subtract;
+  Vec3.prototype.mul = Vec3.prototype.multiply;
+  Vec3.prototype.div = Vec3.prototype.divide;
+  Vec3.prototype.dist = Vec3.prototype.distance;
+  Vec3.prototype.sqrDist = Vec3.prototype.squaredDistance;
+  Vec3.sub = Vec3.subtract;
+  Vec3.mul = Vec3.multiply;
+  Vec3.div = Vec3.divide;
+  Vec3.dist = Vec3.distance;
+  Vec3.sqrDist = Vec3.squaredDistance;
+  Vec3.sqrLen = Vec3.squaredLength;
+  Vec3.mag = Vec3.magnitude;
+  Vec3.length = Vec3.magnitude;
+  Vec3.len = Vec3.magnitude;
+
+  // ../amll/node_modules/gl-matrix/dist/esm/vec4.js
+  var Vec4 = class _Vec4 extends Float32Array {
+    /**
+     * The number of bytes in a {@link Vec4}.
+     */
+    static BYTE_LENGTH = 4 * Float32Array.BYTES_PER_ELEMENT;
+    /**
+     * Create a {@link Vec4}.
+     */
+    constructor(...values) {
+      switch (values.length) {
+        case 4:
+          super(values);
+          break;
+        case 2:
+          super(values[0], values[1], 4);
+          break;
+        case 1: {
+          const v = values[0];
+          if (typeof v === "number") {
+            super([v, v, v, v]);
+          } else {
+            super(v, 0, 4);
+          }
+          break;
+        }
+        default:
+          super(4);
+          break;
+      }
+    }
+    //============
+    // Attributes
+    //============
+    // Getters and setters to make component access read better.
+    // These are likely to be a little bit slower than direct array access.
+    /**
+     * The x component of the vector. Equivalent to `this[0];`
+     * @category Vector components
+     */
+    get x() {
+      return this[0];
+    }
+    set x(value) {
+      this[0] = value;
+    }
+    /**
+     * The y component of the vector. Equivalent to `this[1];`
+     * @category Vector components
+     */
+    get y() {
+      return this[1];
+    }
+    set y(value) {
+      this[1] = value;
+    }
+    /**
+     * The z component of the vector. Equivalent to `this[2];`
+     * @category Vector components
+     */
+    get z() {
+      return this[2];
+    }
+    set z(value) {
+      this[2] = value;
+    }
+    /**
+     * The w component of the vector. Equivalent to `this[3];`
+     * @category Vector components
+     */
+    get w() {
+      return this[3];
+    }
+    set w(value) {
+      this[3] = value;
+    }
+    // Alternate set of getters and setters in case this is being used to define
+    // a color.
+    /**
+     * The r component of the vector. Equivalent to `this[0];`
+     * @category Color components
+     */
+    get r() {
+      return this[0];
+    }
+    set r(value) {
+      this[0] = value;
+    }
+    /**
+     * The g component of the vector. Equivalent to `this[1];`
+     * @category Color components
+     */
+    get g() {
+      return this[1];
+    }
+    set g(value) {
+      this[1] = value;
+    }
+    /**
+     * The b component of the vector. Equivalent to `this[2];`
+     * @category Color components
+     */
+    get b() {
+      return this[2];
+    }
+    set b(value) {
+      this[2] = value;
+    }
+    /**
+     * The a component of the vector. Equivalent to `this[3];`
+     * @category Color components
+     */
+    get a() {
+      return this[3];
+    }
+    set a(value) {
+      this[3] = value;
+    }
+    /**
+     * The magnitude (length) of this.
+     * Equivalent to `Vec4.magnitude(this);`
+     *
+     * Magnitude is used because the `length` attribute is already defined by
+     * TypedArrays to mean the number of elements in the array.
+     */
+    get magnitude() {
+      const x = this[0];
+      const y = this[1];
+      const z = this[2];
+      const w = this[3];
+      return Math.sqrt(x * x + y * y + z * z + w * w);
+    }
+    /**
+     * Alias for {@link Vec4.magnitude}
+     */
+    get mag() {
+      return this.magnitude;
+    }
+    /**
+     * A string representation of `this`
+     * Equivalent to `Vec4.str(this);`
+     */
+    get str() {
+      return _Vec4.str(this);
+    }
+    //===================
+    // Instances methods
+    //===================
+    /**
+     * Copy the values from another {@link Vec4} into `this`.
+     *
+     * @param a the source vector
+     * @returns `this`
+     */
+    copy(a) {
+      super.set(a);
+      return this;
+    }
+    /**
+     * Adds a {@link Vec4} to `this`.
+     * Equivalent to `Vec4.add(this, this, b);`
+     *
+     * @param b - The vector to add to `this`
+     * @returns `this`
+     */
+    add(b) {
+      this[0] += b[0];
+      this[1] += b[1];
+      this[2] += b[2];
+      this[3] += b[3];
+      return this;
+    }
+    /**
+     * Subtracts a {@link Vec4} from `this`.
+     * Equivalent to `Vec4.subtract(this, this, b);`
+     *
+     * @param b - The vector to subtract from `this`
+     * @returns `this`
+     */
+    subtract(b) {
+      this[0] -= b[0];
+      this[1] -= b[1];
+      this[2] -= b[2];
+      this[3] -= b[3];
+      return this;
+    }
+    /**
+     * Alias for {@link Vec4.subtract}
+     */
+    sub(b) {
+      return this;
+    }
+    /**
+     * Multiplies `this` by a {@link Vec4}.
+     * Equivalent to `Vec4.multiply(this, this, b);`
+     *
+     * @param b - The vector to multiply `this` by
+     * @returns `this`
+     */
+    multiply(b) {
+      this[0] *= b[0];
+      this[1] *= b[1];
+      this[2] *= b[2];
+      this[3] *= b[3];
+      return this;
+    }
+    /**
+     * Alias for {@link Vec4.multiply}
+     */
+    mul(b) {
+      return this;
+    }
+    /**
+     * Divides `this` by a {@link Vec4}.
+     * Equivalent to `Vec4.divide(this, this, b);`
+     *
+     * @param b - The vector to divide `this` by
+     * @returns `this`
+     */
+    divide(b) {
+      this[0] /= b[0];
+      this[1] /= b[1];
+      this[2] /= b[2];
+      this[3] /= b[3];
+      return this;
+    }
+    /**
+     * Alias for {@link Vec4.divide}
+     */
+    div(b) {
+      return this;
+    }
+    /**
+     * Scales `this` by a scalar number.
+     * Equivalent to `Vec4.scale(this, this, b);`
+     *
+     * @param b - Amount to scale `this` by
+     * @returns `this`
+     */
+    scale(b) {
+      this[0] *= b;
+      this[1] *= b;
+      this[2] *= b;
+      this[3] *= b;
+      return this;
+    }
+    /**
+     * Calculates `this` scaled by a scalar value then adds the result to `this`.
+     * Equivalent to `Vec4.scaleAndAdd(this, this, b, scale);`
+     *
+     * @param b - The vector to add to `this`
+     * @param scale - The amount to scale `b` by before adding
+     * @returns `this`
+     */
+    scaleAndAdd(b, scale) {
+      this[0] += b[0] * scale;
+      this[1] += b[1] * scale;
+      this[2] += b[2] * scale;
+      this[3] += b[3] * scale;
+      return this;
+    }
+    /**
+     * Calculates the euclidian distance between another {@link Vec4} and `this`.
+     * Equivalent to `Vec4.distance(this, b);`
+     *
+     * @param b - The vector to calculate the distance to
+     * @returns Distance between `this` and `b`
+     */
+    distance(b) {
+      return _Vec4.distance(this, b);
+    }
+    /**
+     * Alias for {@link Vec4.distance}
+     */
+    dist(b) {
+      return 0;
+    }
+    /**
+     * Calculates the squared euclidian distance between another {@link Vec4} and `this`.
+     * Equivalent to `Vec4.squaredDistance(this, b);`
+     *
+     * @param b The vector to calculate the squared distance to
+     * @returns Squared distance between `this` and `b`
+     */
+    squaredDistance(b) {
+      return _Vec4.squaredDistance(this, b);
+    }
+    /**
+     * Alias for {@link Vec4.squaredDistance}
+     */
+    sqrDist(b) {
+      return 0;
+    }
+    /**
+     * Negates the components of `this`.
+     * Equivalent to `Vec4.negate(this, this);`
+     *
+     * @returns `this`
+     */
+    negate() {
+      this[0] *= -1;
+      this[1] *= -1;
+      this[2] *= -1;
+      this[3] *= -1;
+      return this;
+    }
+    /**
+     * Inverts the components of `this`.
+     * Equivalent to `Vec4.inverse(this, this);`
+     *
+     * @returns `this`
+     */
+    invert() {
+      this[0] = 1 / this[0];
+      this[1] = 1 / this[1];
+      this[2] = 1 / this[2];
+      this[3] = 1 / this[3];
+      return this;
+    }
+    /**
+     * Sets each component of `this` to it's absolute value.
+     * Equivalent to `Vec4.abs(this, this);`
+     *
+     * @returns `this`
+     */
+    abs() {
+      this[0] = Math.abs(this[0]);
+      this[1] = Math.abs(this[1]);
+      this[2] = Math.abs(this[2]);
+      this[3] = Math.abs(this[3]);
+      return this;
+    }
+    /**
+     * Calculates the dot product of this and another {@link Vec4}.
+     * Equivalent to `Vec4.dot(this, b);`
+     *
+     * @param b - The second operand
+     * @returns Dot product of `this` and `b`
+     */
+    dot(b) {
+      return this[0] * b[0] + this[1] * b[1] + this[2] * b[2] + this[3] * b[3];
+    }
+    /**
+     * Normalize `this`.
+     * Equivalent to `Vec4.normalize(this, this);`
+     *
+     * @returns `this`
+     */
+    normalize() {
+      return _Vec4.normalize(this, this);
+    }
+    //===================
+    // Static methods
+    //===================
+    /**
+     * Creates a new, empty {@link Vec4}
+     * @category Static
+     *
+     * @returns a new 4D vector
+     */
+    static create() {
+      return new _Vec4();
+    }
+    /**
+     * Creates a new {@link Vec4} initialized with values from an existing vector
+     * @category Static
+     *
+     * @param a - vector to clone
+     * @returns a new 4D vector
+     */
+    static clone(a) {
+      return new _Vec4(a);
+    }
+    /**
+     * Creates a new {@link Vec4} initialized with the given values
+     * @category Static
+     *
+     * @param x - X component
+     * @param y - Y component
+     * @param z - Z component
+     * @param w - W component
+     * @returns a new 4D vector
+     */
+    static fromValues(x, y, z, w) {
+      return new _Vec4(x, y, z, w);
+    }
+    /**
+     * Copy the values from one {@link Vec4} to another
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - the source vector
+     * @returns `out`
+     */
+    static copy(out, a) {
+      out[0] = a[0];
+      out[1] = a[1];
+      out[2] = a[2];
+      out[3] = a[3];
+      return out;
+    }
+    /**
+     * Set the components of a {@link Vec4} to the given values
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param x - X component
+     * @param y - Y component
+     * @param z - Z component
+     * @param w - W component
+     * @returns `out`
+     */
+    static set(out, x, y, z, w) {
+      out[0] = x;
+      out[1] = y;
+      out[2] = z;
+      out[3] = w;
+      return out;
+    }
+    /**
+     * Adds two {@link Vec4}s
+     * @category Static
+     *
+     * @param out - The receiving vector
+     * @param a - The first operand
+     * @param b - The second operand
+     * @returns `out`
+     */
+    static add(out, a, b) {
+      out[0] = a[0] + b[0];
+      out[1] = a[1] + b[1];
+      out[2] = a[2] + b[2];
+      out[3] = a[3] + b[3];
+      return out;
+    }
+    /**
+     * Subtracts vector b from vector a
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - the first operand
+     * @param b - the second operand
+     * @returns `out`
+     */
+    static subtract(out, a, b) {
+      out[0] = a[0] - b[0];
+      out[1] = a[1] - b[1];
+      out[2] = a[2] - b[2];
+      out[3] = a[3] - b[3];
+      return out;
+    }
+    /**
+     * Alias for {@link Vec4.subtract}
+     * @category Static
+     */
+    static sub(out, a, b) {
+      return out;
+    }
+    /**
+     * Multiplies two {@link Vec4}'s
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - the first operand
+     * @param b - the second operand
+     * @returns `out`
+     */
+    static multiply(out, a, b) {
+      out[0] = a[0] * b[0];
+      out[1] = a[1] * b[1];
+      out[2] = a[2] * b[2];
+      out[3] = a[3] * b[3];
+      return out;
+    }
+    /**
+     * Alias for {@link Vec4.multiply}
+     * @category Static
+     */
+    static mul(out, a, b) {
+      return out;
+    }
+    /**
+     * Divides two {@link Vec4}'s
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - the first operand
+     * @param b - the second operand
+     * @returns `out`
+     */
+    static divide(out, a, b) {
+      out[0] = a[0] / b[0];
+      out[1] = a[1] / b[1];
+      out[2] = a[2] / b[2];
+      out[3] = a[3] / b[3];
+      return out;
+    }
+    /**
+     * Alias for {@link Vec4.divide}
+     * @category Static
+     */
+    static div(out, a, b) {
+      return out;
+    }
+    /**
+     * Math.ceil the components of a {@link Vec4}
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - vector to ceil
+     * @returns `out`
+     */
+    static ceil(out, a) {
+      out[0] = Math.ceil(a[0]);
+      out[1] = Math.ceil(a[1]);
+      out[2] = Math.ceil(a[2]);
+      out[3] = Math.ceil(a[3]);
+      return out;
+    }
+    /**
+     * Math.floor the components of a {@link Vec4}
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - vector to floor
+     * @returns `out`
+     */
+    static floor(out, a) {
+      out[0] = Math.floor(a[0]);
+      out[1] = Math.floor(a[1]);
+      out[2] = Math.floor(a[2]);
+      out[3] = Math.floor(a[3]);
+      return out;
+    }
+    /**
+     * Returns the minimum of two {@link Vec4}'s
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - the first operand
+     * @param b - the second operand
+     * @returns `out`
+     */
+    static min(out, a, b) {
+      out[0] = Math.min(a[0], b[0]);
+      out[1] = Math.min(a[1], b[1]);
+      out[2] = Math.min(a[2], b[2]);
+      out[3] = Math.min(a[3], b[3]);
+      return out;
+    }
+    /**
+     * Returns the maximum of two {@link Vec4}'s
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - the first operand
+     * @param b - the second operand
+     * @returns `out`
+     */
+    static max(out, a, b) {
+      out[0] = Math.max(a[0], b[0]);
+      out[1] = Math.max(a[1], b[1]);
+      out[2] = Math.max(a[2], b[2]);
+      out[3] = Math.max(a[3], b[3]);
+      return out;
+    }
+    /**
+     * Math.round the components of a {@link Vec4}
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - vector to round
+     * @returns `out`
+     */
+    static round(out, a) {
+      out[0] = Math.round(a[0]);
+      out[1] = Math.round(a[1]);
+      out[2] = Math.round(a[2]);
+      out[3] = Math.round(a[3]);
+      return out;
+    }
+    /**
+     * Scales a {@link Vec4} by a scalar number
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - the vector to scale
+     * @param scale - amount to scale the vector by
+     * @returns `out`
+     */
+    static scale(out, a, scale) {
+      out[0] = a[0] * scale;
+      out[1] = a[1] * scale;
+      out[2] = a[2] * scale;
+      out[3] = a[3] * scale;
+      return out;
+    }
+    /**
+     * Adds two {@link Vec4}'s after scaling the second operand by a scalar value
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - the first operand
+     * @param b - the second operand
+     * @param scale - the amount to scale b by before adding
+     * @returns `out`
+     */
+    static scaleAndAdd(out, a, b, scale) {
+      out[0] = a[0] + b[0] * scale;
+      out[1] = a[1] + b[1] * scale;
+      out[2] = a[2] + b[2] * scale;
+      out[3] = a[3] + b[3] * scale;
+      return out;
+    }
+    /**
+     * Calculates the euclidian distance between two {@link Vec4}'s
+     * @category Static
+     *
+     * @param a - the first operand
+     * @param b - the second operand
+     * @returns distance between a and b
+     */
+    static distance(a, b) {
+      const x = b[0] - a[0];
+      const y = b[1] - a[1];
+      const z = b[2] - a[2];
+      const w = b[3] - a[3];
+      return Math.hypot(x, y, z, w);
+    }
+    /**
+     * Alias for {@link Vec4.distance}
+     * @category Static
+     */
+    static dist(a, b) {
+      return 0;
+    }
+    /**
+     * Calculates the squared euclidian distance between two {@link Vec4}'s
+     * @category Static
+     *
+     * @param a - the first operand
+     * @param b - the second operand
+     * @returns squared distance between a and b
+     */
+    static squaredDistance(a, b) {
+      const x = b[0] - a[0];
+      const y = b[1] - a[1];
+      const z = b[2] - a[2];
+      const w = b[3] - a[3];
+      return x * x + y * y + z * z + w * w;
+    }
+    /**
+     * Alias for {@link Vec4.squaredDistance}
+     * @category Static
+     */
+    static sqrDist(a, b) {
+      return 0;
+    }
+    /**
+     * Calculates the magnitude (length) of a {@link Vec4}
+     * @category Static
+     *
+     * @param a - vector to calculate length of
+     * @returns length of `a`
+     */
+    static magnitude(a) {
+      const x = a[0];
+      const y = a[1];
+      const z = a[2];
+      const w = a[3];
+      return Math.sqrt(x * x + y * y + z * z + w * w);
+    }
+    /**
+     * Alias for {@link Vec4.magnitude}
+     * @category Static
+     */
+    static mag(a) {
+      return 0;
+    }
+    /**
+     * Alias for {@link Vec4.magnitude}
+     * @category Static
+     * @deprecated Use {@link Vec4.magnitude} to avoid conflicts with builtin `length` methods/attribs
+     */
+    // @ts-ignore: Length conflicts with Function.length
+    static length(a) {
+      return 0;
+    }
+    /**
+     * Alias for {@link Vec4.magnitude}
+     * @category Static
+     * @deprecated Use {@link Vec4.mag}
+     */
+    static len(a) {
+      return 0;
+    }
+    /**
+     * Calculates the squared length of a {@link Vec4}
+     * @category Static
+     *
+     * @param a - vector to calculate squared length of
+     * @returns squared length of a
+     */
+    static squaredLength(a) {
+      const x = a[0];
+      const y = a[1];
+      const z = a[2];
+      const w = a[3];
+      return x * x + y * y + z * z + w * w;
+    }
+    /**
+     * Alias for {@link Vec4.squaredLength}
+     * @category Static
+     */
+    static sqrLen(a) {
+      return 0;
+    }
+    /**
+     * Negates the components of a {@link Vec4}
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - vector to negate
+     * @returns `out`
+     */
+    static negate(out, a) {
+      out[0] = -a[0];
+      out[1] = -a[1];
+      out[2] = -a[2];
+      out[3] = -a[3];
+      return out;
+    }
+    /**
+     * Returns the inverse of the components of a {@link Vec4}
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - vector to invert
+     * @returns `out`
+     */
+    static inverse(out, a) {
+      out[0] = 1 / a[0];
+      out[1] = 1 / a[1];
+      out[2] = 1 / a[2];
+      out[3] = 1 / a[3];
+      return out;
+    }
+    /**
+     * Returns the absolute value of the components of a {@link Vec4}
+     * @category Static
+     *
+     * @param out - The receiving vector
+     * @param a - Vector to compute the absolute values of
+     * @returns `out`
+     */
+    static abs(out, a) {
+      out[0] = Math.abs(a[0]);
+      out[1] = Math.abs(a[1]);
+      out[2] = Math.abs(a[2]);
+      out[3] = Math.abs(a[3]);
+      return out;
+    }
+    /**
+     * Normalize a {@link Vec4}
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - vector to normalize
+     * @returns `out`
+     */
+    static normalize(out, a) {
+      const x = a[0];
+      const y = a[1];
+      const z = a[2];
+      const w = a[3];
+      let len = x * x + y * y + z * z + w * w;
+      if (len > 0) {
+        len = 1 / Math.sqrt(len);
+      }
+      out[0] = x * len;
+      out[1] = y * len;
+      out[2] = z * len;
+      out[3] = w * len;
+      return out;
+    }
+    /**
+     * Calculates the dot product of two {@link Vec4}'s
+     * @category Static
+     *
+     * @param a - the first operand
+     * @param b - the second operand
+     * @returns dot product of a and b
+     */
+    static dot(a, b) {
+      return a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3];
+    }
+    /**
+     * Returns the cross-product of three vectors in a 4-dimensional space
+     * @category Static
+     *
+     * @param out the receiving vector
+     * @param u - the first vector
+     * @param v - the second vector
+     * @param w - the third vector
+     * @returns result
+     */
+    static cross(out, u, v, w) {
+      const a = v[0] * w[1] - v[1] * w[0];
+      const b = v[0] * w[2] - v[2] * w[0];
+      const c = v[0] * w[3] - v[3] * w[0];
+      const d = v[1] * w[2] - v[2] * w[1];
+      const e = v[1] * w[3] - v[3] * w[1];
+      const f = v[2] * w[3] - v[3] * w[2];
+      const g = u[0];
+      const h = u[1];
+      const i = u[2];
+      const j = u[3];
+      out[0] = h * f - i * e + j * d;
+      out[1] = -(g * f) + i * c - j * b;
+      out[2] = g * e - h * c + j * a;
+      out[3] = -(g * d) + h * b - i * a;
+      return out;
+    }
+    /**
+     * Performs a linear interpolation between two {@link Vec4}'s
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - the first operand
+     * @param b - the second operand
+     * @param t - interpolation amount, in the range [0-1], between the two inputs
+     * @returns `out`
+     */
+    static lerp(out, a, b, t) {
+      const ax = a[0];
+      const ay = a[1];
+      const az = a[2];
+      const aw = a[3];
+      out[0] = ax + t * (b[0] - ax);
+      out[1] = ay + t * (b[1] - ay);
+      out[2] = az + t * (b[2] - az);
+      out[3] = aw + t * (b[3] - aw);
+      return out;
+    }
+    /**
+     * Generates a random vector with the given scale
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param [scale] - Length of the resulting vector. If ommitted, a unit vector will be returned
+     * @returns `out`
+     */
+    /*static random(out: Vec4Like, scale): Vec4Like {
+        scale = scale || 1.0;
+    
+        // Marsaglia, George. Choosing a Point from the Surface of a
+        // Sphere. Ann. Math. Statist. 43 (1972), no. 2, 645--646.
+        // http://projecteuclid.org/euclid.aoms/1177692644;
+        var v1, v2, v3, v4;
+        var s1, s2;
+        do {
+          v1 = glMatrix.RANDOM() * 2 - 1;
+          v2 = glMatrix.RANDOM() * 2 - 1;
+          s1 = v1 * v1 + v2 * v2;
+        } while (s1 >= 1);
+        do {
+          v3 = glMatrix.RANDOM() * 2 - 1;
+          v4 = glMatrix.RANDOM() * 2 - 1;
+          s2 = v3 * v3 + v4 * v4;
+        } while (s2 >= 1);
+    
+        var d = Math.sqrt((1 - s1) / s2);
+        out[0] = scale * v1;
+        out[1] = scale * v2;
+        out[2] = scale * v3 * d;
+        out[3] = scale * v4 * d;
+        return out;
+      }*/
+    /**
+     * Transforms the {@link Vec4} with a {@link Mat4}.
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - the vector to transform
+     * @param m - matrix to transform with
+     * @returns `out`
+     */
+    static transformMat4(out, a, m) {
+      const x = a[0];
+      const y = a[1];
+      const z = a[2];
+      const w = a[3];
+      out[0] = m[0] * x + m[4] * y + m[8] * z + m[12] * w;
+      out[1] = m[1] * x + m[5] * y + m[9] * z + m[13] * w;
+      out[2] = m[2] * x + m[6] * y + m[10] * z + m[14] * w;
+      out[3] = m[3] * x + m[7] * y + m[11] * z + m[15] * w;
+      return out;
+    }
+    /**
+     * Transforms the {@link Vec4} with a {@link Quat}
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - the vector to transform
+     * @param q - quaternion to transform with
+     * @returns `out`
+     */
+    static transformQuat(out, a, q) {
+      const x = a[0];
+      const y = a[1];
+      const z = a[2];
+      const qx = q[0];
+      const qy = q[1];
+      const qz = q[2];
+      const qw = q[3];
+      const ix = qw * x + qy * z - qz * y;
+      const iy = qw * y + qz * x - qx * z;
+      const iz = qw * z + qx * y - qy * x;
+      const iw = -qx * x - qy * y - qz * z;
+      out[0] = ix * qw + iw * -qx + iy * -qz - iz * -qy;
+      out[1] = iy * qw + iw * -qy + iz * -qx - ix * -qz;
+      out[2] = iz * qw + iw * -qz + ix * -qy - iy * -qx;
+      out[3] = a[3];
+      return out;
+    }
+    /**
+     * Set the components of a {@link Vec4} to zero
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @returns `out`
+     */
+    static zero(out) {
+      out[0] = 0;
+      out[1] = 0;
+      out[2] = 0;
+      out[3] = 0;
+      return out;
+    }
+    /**
+     * Returns a string representation of a {@link Vec4}
+     * @category Static
+     *
+     * @param a - vector to represent as a string
+     * @returns string representation of the vector
+     */
+    static str(a) {
+      return `Vec4(${a.join(", ")})`;
+    }
+    /**
+     * Returns whether or not the vectors have exactly the same elements in the same position (when compared with ===)
+     * @category Static
+     *
+     * @param a - The first vector.
+     * @param b - The second vector.
+     * @returns True if the vectors are equal, false otherwise.
+     */
+    static exactEquals(a, b) {
+      return a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && a[3] === b[3];
+    }
+    /**
+     * Returns whether or not the vectors have approximately the same elements in the same position.
+     * @category Static
+     *
+     * @param a - The first vector.
+     * @param b - The second vector.
+     * @returns True if the vectors are equal, false otherwise.
+     */
+    static equals(a, b) {
+      const a0 = a[0];
+      const a1 = a[1];
+      const a2 = a[2];
+      const a3 = a[3];
+      const b0 = b[0];
+      const b1 = b[1];
+      const b2 = b[2];
+      const b3 = b[3];
+      return Math.abs(a0 - b0) <= EPSILON * Math.max(1, Math.abs(a0), Math.abs(b0)) && Math.abs(a1 - b1) <= EPSILON * Math.max(1, Math.abs(a1), Math.abs(b1)) && Math.abs(a2 - b2) <= EPSILON * Math.max(1, Math.abs(a2), Math.abs(b2)) && Math.abs(a3 - b3) <= EPSILON * Math.max(1, Math.abs(a3), Math.abs(b3));
+    }
+  };
+  Vec4.prototype.sub = Vec4.prototype.subtract;
+  Vec4.prototype.mul = Vec4.prototype.multiply;
+  Vec4.prototype.div = Vec4.prototype.divide;
+  Vec4.prototype.dist = Vec4.prototype.distance;
+  Vec4.prototype.sqrDist = Vec4.prototype.squaredDistance;
+  Vec4.sub = Vec4.subtract;
+  Vec4.mul = Vec4.multiply;
+  Vec4.div = Vec4.divide;
+  Vec4.dist = Vec4.distance;
+  Vec4.sqrDist = Vec4.squaredDistance;
+  Vec4.sqrLen = Vec4.squaredLength;
+  Vec4.mag = Vec4.magnitude;
+  Vec4.length = Vec4.magnitude;
+  Vec4.len = Vec4.magnitude;
+
+  // ../amll/node_modules/gl-matrix/dist/esm/vec2.js
+  var Vec2 = class _Vec2 extends Float32Array {
+    /**
+     * The number of bytes in a {@link Vec2}.
+     */
+    static BYTE_LENGTH = 2 * Float32Array.BYTES_PER_ELEMENT;
+    /**
+     * Create a {@link Vec2}.
+     */
+    constructor(...values) {
+      switch (values.length) {
+        case 2: {
+          const v = values[0];
+          if (typeof v === "number") {
+            super([v, values[1]]);
+          } else {
+            super(v, values[1], 2);
+          }
+          break;
+        }
+        case 1: {
+          const v = values[0];
+          if (typeof v === "number") {
+            super([v, v]);
+          } else {
+            super(v, 0, 2);
+          }
+          break;
+        }
+        default:
+          super(2);
+          break;
+      }
+    }
+    //============
+    // Attributes
+    //============
+    // Getters and setters to make component access read better.
+    // These are likely to be a little bit slower than direct array access.
+    /**
+     * The x component of the vector. Equivalent to `this[0];`
+     * @category Vector components
+     */
+    get x() {
+      return this[0];
+    }
+    set x(value) {
+      this[0] = value;
+    }
+    /**
+     * The y component of the vector. Equivalent to `this[1];`
+     * @category Vector components
+     */
+    get y() {
+      return this[1];
+    }
+    set y(value) {
+      this[1] = value;
+    }
+    // Alternate set of getters and setters in case this is being used to define
+    // a color.
+    /**
+     * The r component of the vector. Equivalent to `this[0];`
+     * @category Color components
+     */
+    get r() {
+      return this[0];
+    }
+    set r(value) {
+      this[0] = value;
+    }
+    /**
+     * The g component of the vector. Equivalent to `this[1];`
+     * @category Color components
+     */
+    get g() {
+      return this[1];
+    }
+    set g(value) {
+      this[1] = value;
+    }
+    /**
+     * The magnitude (length) of this.
+     * Equivalent to `Vec2.magnitude(this);`
+     *
+     * Magnitude is used because the `length` attribute is already defined by
+     * TypedArrays to mean the number of elements in the array.
+     */
+    get magnitude() {
+      return Math.hypot(this[0], this[1]);
+    }
+    /**
+     * Alias for {@link Vec2.magnitude}
+     */
+    get mag() {
+      return this.magnitude;
+    }
+    /**
+     * The squared magnitude (length) of `this`.
+     * Equivalent to `Vec2.squaredMagnitude(this);`
+     */
+    get squaredMagnitude() {
+      const x = this[0];
+      const y = this[1];
+      return x * x + y * y;
+    }
+    /**
+     * Alias for {@link Vec2.squaredMagnitude}
+     */
+    get sqrMag() {
+      return this.squaredMagnitude;
+    }
+    /**
+     * A string representation of `this`
+     * Equivalent to `Vec2.str(this);`
+     */
+    get str() {
+      return _Vec2.str(this);
+    }
+    //===================
+    // Instances methods
+    //===================
+    /**
+     * Copy the values from another {@link Vec2} into `this`.
+     *
+     * @param a the source vector
+     * @returns `this`
+     */
+    copy(a) {
+      this.set(a);
+      return this;
+    }
+    // Instead of zero(), use a.fill(0) for instances;
+    /**
+     * Adds a {@link Vec2} to `this`.
+     * Equivalent to `Vec2.add(this, this, b);`
+     *
+     * @param b - The vector to add to `this`
+     * @returns `this`
+     */
+    add(b) {
+      this[0] += b[0];
+      this[1] += b[1];
+      return this;
+    }
+    /**
+     * Subtracts a {@link Vec2} from `this`.
+     * Equivalent to `Vec2.subtract(this, this, b);`
+     *
+     * @param b - The vector to subtract from `this`
+     * @returns `this`
+     */
+    subtract(b) {
+      this[0] -= b[0];
+      this[1] -= b[1];
+      return this;
+    }
+    /**
+     * Alias for {@link Vec2.subtract}
+     */
+    sub(b) {
+      return this;
+    }
+    /**
+     * Multiplies `this` by a {@link Vec2}.
+     * Equivalent to `Vec2.multiply(this, this, b);`
+     *
+     * @param b - The vector to multiply `this` by
+     * @returns `this`
+     */
+    multiply(b) {
+      this[0] *= b[0];
+      this[1] *= b[1];
+      return this;
+    }
+    /**
+     * Alias for {@link Vec2.multiply}
+     */
+    mul(b) {
+      return this;
+    }
+    /**
+     * Divides `this` by a {@link Vec2}.
+     * Equivalent to `Vec2.divide(this, this, b);`
+     *
+     * @param b - The vector to divide `this` by
+     * @returns {Vec2} `this`
+     */
+    divide(b) {
+      this[0] /= b[0];
+      this[1] /= b[1];
+      return this;
+    }
+    /**
+     * Alias for {@link Vec2.divide}
+     */
+    div(b) {
+      return this;
+    }
+    /**
+     * Scales `this` by a scalar number.
+     * Equivalent to `Vec2.scale(this, this, b);`
+     *
+     * @param b - Amount to scale `this` by
+     * @returns `this`
+     */
+    scale(b) {
+      this[0] *= b;
+      this[1] *= b;
+      return this;
+    }
+    /**
+     * Calculates `this` scaled by a scalar value then adds the result to `this`.
+     * Equivalent to `Vec2.scaleAndAdd(this, this, b, scale);`
+     *
+     * @param b - The vector to add to `this`
+     * @param scale - The amount to scale `b` by before adding
+     * @returns `this`
+     */
+    scaleAndAdd(b, scale) {
+      this[0] += b[0] * scale;
+      this[1] += b[1] * scale;
+      return this;
+    }
+    /**
+     * Calculates the euclidian distance between another {@link Vec2} and `this`.
+     * Equivalent to `Vec2.distance(this, b);`
+     *
+     * @param b - The vector to calculate the distance to
+     * @returns Distance between `this` and `b`
+     */
+    distance(b) {
+      return _Vec2.distance(this, b);
+    }
+    /**
+     * Alias for {@link Vec2.distance}
+     */
+    dist(b) {
+      return 0;
+    }
+    /**
+     * Calculates the squared euclidian distance between another {@link Vec2} and `this`.
+     * Equivalent to `Vec2.squaredDistance(this, b);`
+     *
+     * @param b The vector to calculate the squared distance to
+     * @returns Squared distance between `this` and `b`
+     */
+    squaredDistance(b) {
+      return _Vec2.squaredDistance(this, b);
+    }
+    /**
+     * Alias for {@link Vec2.squaredDistance}
+     */
+    sqrDist(b) {
+      return 0;
+    }
+    /**
+     * Negates the components of `this`.
+     * Equivalent to `Vec2.negate(this, this);`
+     *
+     * @returns `this`
+     */
+    negate() {
+      this[0] *= -1;
+      this[1] *= -1;
+      return this;
+    }
+    /**
+     * Inverts the components of `this`.
+     * Equivalent to `Vec2.inverse(this, this);`
+     *
+     * @returns `this`
+     */
+    invert() {
+      this[0] = 1 / this[0];
+      this[1] = 1 / this[1];
+      return this;
+    }
+    /**
+     * Sets each component of `this` to it's absolute value.
+     * Equivalent to `Vec2.abs(this, this);`
+     *
+     * @returns `this`
+     */
+    abs() {
+      this[0] = Math.abs(this[0]);
+      this[1] = Math.abs(this[1]);
+      return this;
+    }
+    /**
+     * Calculates the dot product of this and another {@link Vec2}.
+     * Equivalent to `Vec2.dot(this, b);`
+     *
+     * @param b - The second operand
+     * @returns Dot product of `this` and `b`
+     */
+    dot(b) {
+      return this[0] * b[0] + this[1] * b[1];
+    }
+    /**
+     * Normalize `this`.
+     * Equivalent to `Vec2.normalize(this, this);`
+     *
+     * @returns `this`
+     */
+    normalize() {
+      return _Vec2.normalize(this, this);
+    }
+    //================
+    // Static methods
+    //================
+    /**
+     * Creates a new, empty {@link Vec2}
+     * @category Static
+     *
+     * @returns A new 2D vector
+     */
+    static create() {
+      return new _Vec2();
+    }
+    /**
+     * Creates a new {@link Vec2} initialized with values from an existing vector
+     * @category Static
+     *
+     * @param a - Vector to clone
+     * @returns A new 2D vector
+     */
+    static clone(a) {
+      return new _Vec2(a);
+    }
+    /**
+     * Creates a new {@link Vec2} initialized with the given values
+     * @category Static
+     *
+     * @param x - X component
+     * @param y - Y component
+     * @returns A new 2D vector
+     */
+    static fromValues(x, y) {
+      return new _Vec2(x, y);
+    }
+    /**
+     * Copy the values from one {@link Vec2} to another
+     * @category Static
+     *
+     * @param out - the receiving vector
+     * @param a - The source vector
+     * @returns `out`
+     */
+    static copy(out, a) {
+      out[0] = a[0];
+      out[1] = a[1];
+      return out;
+    }
+    /**
+     * Set the components of a {@link Vec2} to the given values
+     * @category Static
+     *
+     * @param out - The receiving vector
+     * @param x - X component
+     * @param y - Y component
+     * @returns `out`
+     */
+    static set(out, x, y) {
+      out[0] = x;
+      out[1] = y;
+      return out;
+    }
+    /**
+     * Adds two {@link Vec2}s
+     * @category Static
+     *
+     * @param out - The receiving vector
+     * @param a - The first operand
+     * @param b - The second operand
+     * @returns `out`
+     */
+    static add(out, a, b) {
+      out[0] = a[0] + b[0];
+      out[1] = a[1] + b[1];
+      return out;
+    }
+    /**
+     * Subtracts vector b from vector a
+     * @category Static
+     *
+     * @param out - The receiving vector
+     * @param a - The first operand
+     * @param b - The second operand
+     * @returns `out`
+     */
+    static subtract(out, a, b) {
+      out[0] = a[0] - b[0];
+      out[1] = a[1] - b[1];
+      return out;
+    }
+    /**
+     * Alias for {@link Vec2.subtract}
+     * @category Static
+     */
+    static sub(out, a, b) {
+      return [0, 0];
+    }
+    /**
+     * Multiplies two {@link Vec2}s
+     * @category Static
+     *
+     * @param out - The receiving vector
+     * @param a - The first operand
+     * @param b - The second operand
+     * @returns `out`
+     */
+    static multiply(out, a, b) {
+      out[0] = a[0] * b[0];
+      out[1] = a[1] * b[1];
+      return out;
+    }
+    /**
+     * Alias for {@link Vec2.multiply}
+     * @category Static
+     */
+    static mul(out, a, b) {
+      return [0, 0];
+    }
+    /**
+     * Divides two {@link Vec2}s
+     * @category Static
+     *
+     * @param out - The receiving vector
+     * @param a - The first operand
+     * @param b - The second operand
+     * @returns `out`
+     */
+    static divide(out, a, b) {
+      out[0] = a[0] / b[0];
+      out[1] = a[1] / b[1];
+      return out;
+    }
+    /**
+     * Alias for {@link Vec2.divide}
+     * @category Static
+     */
+    static div(out, a, b) {
+      return [0, 0];
+    }
+    /**
+     * Math.ceil the components of a {@link Vec2}
+     * @category Static
+     *
+     * @param out - The receiving vector
+     * @param a - Vector to ceil
+     * @returns `out`
+     */
+    static ceil(out, a) {
+      out[0] = Math.ceil(a[0]);
+      out[1] = Math.ceil(a[1]);
+      return out;
+    }
+    /**
+     * Math.floor the components of a {@link Vec2}
+     * @category Static
+     *
+     * @param out - The receiving vector
+     * @param a - Vector to floor
+     * @returns `out`
+     */
+    static floor(out, a) {
+      out[0] = Math.floor(a[0]);
+      out[1] = Math.floor(a[1]);
+      return out;
+    }
+    /**
+     * Returns the minimum of two {@link Vec2}s
+     * @category Static
+     *
+     * @param out - The receiving vector
+     * @param a - The first operand
+     * @param b - The second operand
+     * @returns `out`
+     */
+    static min(out, a, b) {
+      out[0] = Math.min(a[0], b[0]);
+      out[1] = Math.min(a[1], b[1]);
+      return out;
+    }
+    /**
+     * Returns the maximum of two {@link Vec2}s
+     * @category Static
+     *
+     * @param out - The receiving vector
+     * @param a - The first operand
+     * @param b - The second operand
+     * @returns `out`
+     */
+    static max(out, a, b) {
+      out[0] = Math.max(a[0], b[0]);
+      out[1] = Math.max(a[1], b[1]);
+      return out;
+    }
+    /**
+     * Math.round the components of a {@link Vec2}
+     * @category Static
+     *
+     * @param out - The receiving vector
+     * @param a - Vector to round
+     * @returns `out`
+     */
+    static round(out, a) {
+      out[0] = Math.round(a[0]);
+      out[1] = Math.round(a[1]);
+      return out;
+    }
+    /**
+     * Scales a {@link Vec2} by a scalar number
+     * @category Static
+     *
+     * @param out - The receiving vector
+     * @param a - The vector to scale
+     * @param b - Amount to scale the vector by
+     * @returns `out`
+     */
+    static scale(out, a, b) {
+      out[0] = a[0] * b;
+      out[1] = a[1] * b;
+      return out;
+    }
+    /**
+     * Adds two Vec2's after scaling the second operand by a scalar value
+     * @category Static
+     *
+     * @param out - The receiving vector
+     * @param a - The first operand
+     * @param b - The second operand
+     * @param scale - The amount to scale b by before adding
+     * @returns `out`
+     */
+    static scaleAndAdd(out, a, b, scale) {
+      out[0] = a[0] + b[0] * scale;
+      out[1] = a[1] + b[1] * scale;
+      return out;
+    }
+    /**
+     * Calculates the euclidian distance between two {@link Vec2}s
+     * @category Static
+     *
+     * @param a - The first operand
+     * @param b - The second operand
+     * @returns distance between `a` and `b`
+     */
+    static distance(a, b) {
+      return Math.hypot(b[0] - a[0], b[1] - a[1]);
+    }
+    /**
+     * Alias for {@link Vec2.distance}
+     * @category Static
+     */
+    static dist(a, b) {
+      return 0;
+    }
+    /**
+     * Calculates the squared euclidian distance between two {@link Vec2}s
+     * @category Static
+     *
+     * @param a - The first operand
+     * @param b - The second operand
+     * @returns Squared distance between `a` and `b`
+     */
+    static squaredDistance(a, b) {
+      const x = b[0] - a[0];
+      const y = b[1] - a[1];
+      return x * x + y * y;
+    }
+    /**
+     * Alias for {@link Vec2.distance}
+     * @category Static
+     */
+    static sqrDist(a, b) {
+      return 0;
+    }
+    /**
+     * Calculates the magnitude (length) of a {@link Vec2}
+     * @category Static
+     *
+     * @param a - Vector to calculate magnitude of
+     * @returns Magnitude of a
+     */
+    static magnitude(a) {
+      let x = a[0];
+      let y = a[1];
+      return Math.sqrt(x * x + y * y);
+    }
+    /**
+     * Alias for {@link Vec2.magnitude}
+     * @category Static
+     */
+    static mag(a) {
+      return 0;
+    }
+    /**
+     * Alias for {@link Vec2.magnitude}
+     * @category Static
+     * @deprecated Use {@link Vec2.magnitude} to avoid conflicts with builtin `length` methods/attribs
+     *
+     * @param a - vector to calculate length of
+     * @returns length of a
+     */
+    // @ts-ignore: Length conflicts with Function.length
+    static length(a) {
+      return 0;
+    }
+    /**
+     * Alias for {@link Vec2.magnitude}
+     * @category Static
+     * @deprecated Use {@link Vec2.mag}
+     */
+    static len(a) {
+      return 0;
+    }
+    /**
+     * Calculates the squared length of a {@link Vec2}
+     * @category Static
+     *
+     * @param a - Vector to calculate squared length of
+     * @returns Squared length of a
+     */
+    static squaredLength(a) {
+      const x = a[0];
+      const y = a[1];
+      return x * x + y * y;
+    }
+    /**
+     * Alias for {@link Vec2.squaredLength}
+     */
+    static sqrLen(a, b) {
+      return 0;
+    }
+    /**
+     * Negates the components of a {@link Vec2}
+     * @category Static
+     *
+     * @param out - The receiving vector
+     * @param a - Vector to negate
+     * @returns `out`
+     */
+    static negate(out, a) {
+      out[0] = -a[0];
+      out[1] = -a[1];
+      return out;
+    }
+    /**
+     * Returns the inverse of the components of a {@link Vec2}
+     * @category Static
+     *
+     * @param out - The receiving vector
+     * @param a - Vector to invert
+     * @returns `out`
+     */
+    static inverse(out, a) {
+      out[0] = 1 / a[0];
+      out[1] = 1 / a[1];
+      return out;
+    }
+    /**
+     * Returns the absolute value of the components of a {@link Vec2}
+     * @category Static
+     *
+     * @param out - The receiving vector
+     * @param a - Vector to compute the absolute values of
+     * @returns `out`
+     */
+    static abs(out, a) {
+      out[0] = Math.abs(a[0]);
+      out[1] = Math.abs(a[1]);
+      return out;
+    }
+    /**
+     * Normalize a {@link Vec2}
+     * @category Static
+     *
+     * @param out - The receiving vector
+     * @param a - Vector to normalize
+     * @returns `out`
+     */
+    static normalize(out, a) {
+      const x = a[0];
+      const y = a[1];
+      let len = x * x + y * y;
+      if (len > 0) {
+        len = 1 / Math.sqrt(len);
+      }
+      out[0] = a[0] * len;
+      out[1] = a[1] * len;
+      return out;
+    }
+    /**
+     * Calculates the dot product of two {@link Vec2}s
+     * @category Static
+     *
+     * @param a - The first operand
+     * @param b - The second operand
+     * @returns Dot product of `a` and `b`
+     */
+    static dot(a, b) {
+      return a[0] * b[0] + a[1] * b[1];
+    }
+    /**
+     * Computes the cross product of two {@link Vec2}s
+     * Note that the cross product must by definition produce a 3D vector.
+     * For this reason there is also not instance equivalent for this function.
+     * @category Static
+     *
+     * @param out - The receiving vector
+     * @param a - The first operand
+     * @param b - The second operand
+     * @returns `out`
+     */
+    static cross(out, a, b) {
+      const z = a[0] * b[1] - a[1] * b[0];
+      out[0] = out[1] = 0;
+      out[2] = z;
+      return out;
+    }
+    /**
+     * Performs a linear interpolation between two {@link Vec2}s
+     * @category Static
+     *
+     * @param out - The receiving vector
+     * @param a - The first operand
+     * @param b - The second operand
+     * @param t - Interpolation amount, in the range [0-1], between the two inputs
+     * @returns `out`
+     */
+    static lerp(out, a, b, t) {
+      const ax = a[0];
+      const ay = a[1];
+      out[0] = ax + t * (b[0] - ax);
+      out[1] = ay + t * (b[1] - ay);
+      return out;
+    }
+    /**
+     * Transforms the {@link Vec2} with a {@link Mat2}
+     *
+     * @param out - The receiving vector
+     * @param a - The vector to transform
+     * @param m - Matrix to transform with
+     * @returns `out`
+     */
+    static transformMat2(out, a, m) {
+      const x = a[0];
+      const y = a[1];
+      out[0] = m[0] * x + m[2] * y;
+      out[1] = m[1] * x + m[3] * y;
+      return out;
+    }
+    /**
+     * Transforms the {@link Vec2} with a {@link Mat2d}
+     *
+     * @param out - The receiving vector
+     * @param a - The vector to transform
+     * @param m - Matrix to transform with
+     * @returns `out`
+     */
+    static transformMat2d(out, a, m) {
+      const x = a[0];
+      const y = a[1];
+      out[0] = m[0] * x + m[2] * y + m[4];
+      out[1] = m[1] * x + m[3] * y + m[5];
+      return out;
+    }
+    /**
+     * Transforms the {@link Vec2} with a {@link Mat3}
+     * 3rd vector component is implicitly '1'
+     *
+     * @param out - The receiving vector
+     * @param a - The vector to transform
+     * @param m - Matrix to transform with
+     * @returns `out`
+     */
+    static transformMat3(out, a, m) {
+      const x = a[0];
+      const y = a[1];
+      out[0] = m[0] * x + m[3] * y + m[6];
+      out[1] = m[1] * x + m[4] * y + m[7];
+      return out;
+    }
+    /**
+     * Transforms the {@link Vec2} with a {@link Mat4}
+     * 3rd vector component is implicitly '0'
+     * 4th vector component is implicitly '1'
+     *
+     * @param out - The receiving vector
+     * @param a - The vector to transform
+     * @param m - Matrix to transform with
+     * @returns `out`
+     */
+    static transformMat4(out, a, m) {
+      const x = a[0];
+      const y = a[1];
+      out[0] = m[0] * x + m[4] * y + m[12];
+      out[1] = m[1] * x + m[5] * y + m[13];
+      return out;
+    }
+    /**
+     * Rotate a 2D vector
+     * @category Static
+     *
+     * @param out - The receiving {@link Vec2}
+     * @param a - The {@link Vec2} point to rotate
+     * @param b - The origin of the rotation
+     * @param rad - The angle of rotation in radians
+     * @returns `out`
+     */
+    static rotate(out, a, b, rad) {
+      const p0 = a[0] - b[0];
+      const p1 = a[1] - b[1];
+      const sinC = Math.sin(rad);
+      const cosC = Math.cos(rad);
+      out[0] = p0 * cosC - p1 * sinC + b[0];
+      out[1] = p0 * sinC + p1 * cosC + b[1];
+      return out;
+    }
+    /**
+     * Get the angle between two 2D vectors
+     * @category Static
+     *
+     * @param a - The first operand
+     * @param b - The second operand
+     * @returns The angle in radians
+     */
+    static angle(a, b) {
+      const x1 = a[0];
+      const y1 = a[1];
+      const x2 = b[0];
+      const y2 = b[1];
+      const mag = Math.sqrt(x1 * x1 + y1 * y1) * Math.sqrt(x2 * x2 + y2 * y2);
+      const cosine = mag && (x1 * x2 + y1 * y2) / mag;
+      return Math.acos(Math.min(Math.max(cosine, -1), 1));
+    }
+    /**
+     * Set the components of a {@link Vec2} to zero
+     * @category Static
+     *
+     * @param out - The receiving vector
+     * @returns `out`
+     */
+    static zero(out) {
+      out[0] = 0;
+      out[1] = 0;
+      return out;
+    }
+    /**
+     * Returns whether or not the vectors have exactly the same elements in the same position (when compared with ===)
+     * @category Static
+     *
+     * @param a - The first vector.
+     * @param b - The second vector.
+     * @returns `true` if the vectors components are ===, `false` otherwise.
+     */
+    static exactEquals(a, b) {
+      return a[0] === b[0] && a[1] === b[1];
+    }
+    /**
+     * Returns whether or not the vectors have approximately the same elements in the same position.
+     * @category Static
+     *
+     * @param a - The first vector.
+     * @param b - The second vector.
+     * @returns `true` if the vectors are approximately equal, `false` otherwise.
+     */
+    static equals(a, b) {
+      const a0 = a[0];
+      const a1 = a[1];
+      const b0 = b[0];
+      const b1 = b[1];
+      return Math.abs(a0 - b0) <= EPSILON * Math.max(1, Math.abs(a0), Math.abs(b0)) && Math.abs(a1 - b1) <= EPSILON * Math.max(1, Math.abs(a1), Math.abs(b1));
+    }
+    /**
+     * Returns a string representation of a vector
+     * @category Static
+     *
+     * @param a - Vector to represent as a string
+     * @returns String representation of the vector
+     */
+    static str(a) {
+      return `Vec2(${a.join(", ")})`;
+    }
+  };
+  Vec2.prototype.sub = Vec2.prototype.subtract;
+  Vec2.prototype.mul = Vec2.prototype.multiply;
+  Vec2.prototype.div = Vec2.prototype.divide;
+  Vec2.prototype.dist = Vec2.prototype.distance;
+  Vec2.prototype.sqrDist = Vec2.prototype.squaredDistance;
+  Vec2.sub = Vec2.subtract;
+  Vec2.mul = Vec2.multiply;
+  Vec2.div = Vec2.divide;
+  Vec2.dist = Vec2.distance;
+  Vec2.sqrDist = Vec2.squaredDistance;
+  Vec2.sqrLen = Vec2.squaredLength;
+  Vec2.mag = Vec2.magnitude;
+  Vec2.length = Vec2.magnitude;
+  Vec2.len = Vec2.magnitude;
+
   // ../amll/node_modules/@ungap/structured-clone/esm/types.js
   var VOID = -1;
   var PRIMITIVE = 0;
@@ -2533,6 +5513,284 @@
   }
 
   // ../amll/node_modules/@applemusic-like-lyrics/core/dist/amll-core.mjs
+  var AbstractBaseRenderer = class {
+  };
+  function clamp1(x) {
+    return Math.max(1, x);
+  }
+  var BaseRenderer = class extends AbstractBaseRenderer {
+    canvas;
+    observer;
+    flowSpeed = 1;
+    currerntRenderScale = 0.75;
+    constructor(canvas) {
+      super();
+      this.canvas = canvas;
+      this.observer = new ResizeObserver(() => {
+        const width = clamp1(canvas.clientWidth * window.devicePixelRatio * this.currerntRenderScale);
+        const height = clamp1(canvas.clientHeight * window.devicePixelRatio * this.currerntRenderScale);
+        this.onResize(width, height);
+      });
+      this.observer.observe(canvas);
+    }
+    setRenderScale(scale) {
+      this.currerntRenderScale = scale;
+      this.onResize(this.canvas.clientWidth * window.devicePixelRatio * this.currerntRenderScale, this.canvas.clientHeight * window.devicePixelRatio * this.currerntRenderScale);
+    }
+    /**
+    * 当画板元素大小发生变化时此函数会被调用
+    * 可以在此处重设和渲染器相关的尺寸设置
+    * 考虑到初始化的时候元素不一定在文档中或出于某些特殊样式状态，尺寸长宽有可能会为 0，请注意进行特判处理
+    * @param width 画板元素实际的物理像素宽度，有可能为 0
+    * @param height 画板元素实际的物理像素高度，有可能为 0
+    */
+    onResize(width, height) {
+      this.canvas.width = width;
+      this.canvas.height = height;
+    }
+    /**
+    * 修改背景的流动速度，数字越大越快，默认为 1
+    * @param speed 背景的流动速度，默认为 1
+    */
+    setFlowSpeed(speed) {
+      this.flowSpeed = speed;
+    }
+    /** 停止监听画板尺寸，供构造失败等尚未接管画板所有权的路径清理 */
+    disconnectResizeObserver() {
+      this.observer.disconnect();
+    }
+    dispose() {
+      this.disconnectResizeObserver();
+      this.canvas.remove();
+    }
+    getElement() {
+      return this.canvas;
+    }
+  };
+  var GLProgram = class {
+    label;
+    gl;
+    program;
+    vertexShader;
+    fragmentShader;
+    attrs;
+    uniformLocations = /* @__PURE__ */ new Map();
+    constructor(gl, vertexShaderSource, fragmentShaderSource, label = "unknown") {
+      this.label = label;
+      this.gl = gl;
+      const vertexShader = this.createShader(gl.VERTEX_SHADER, vertexShaderSource);
+      let fragmentShader;
+      try {
+        fragmentShader = this.createShader(gl.FRAGMENT_SHADER, fragmentShaderSource);
+        this.program = this.createProgram(vertexShader, fragmentShader);
+      } catch (error) {
+        gl.deleteShader(vertexShader);
+        if (fragmentShader) gl.deleteShader(fragmentShader);
+        throw error;
+      }
+      this.vertexShader = vertexShader;
+      this.fragmentShader = fragmentShader;
+      const num = gl.getProgramParameter(this.program, gl.ACTIVE_ATTRIBUTES);
+      const attrs = {};
+      for (let i = 0; i < num; i++) {
+        const info = gl.getActiveAttrib(this.program, i);
+        if (!info) continue;
+        const location2 = gl.getAttribLocation(this.program, info.name);
+        if (location2 === -1) continue;
+        attrs[info.name] = location2;
+      }
+      this.attrs = attrs;
+    }
+    createShader(type, source) {
+      const gl = this.gl;
+      const shader = gl.createShader(type);
+      if (!shader) throw new Error("Failed to create shader");
+      gl.shaderSource(shader, source);
+      gl.compileShader(shader);
+      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        const error = /* @__PURE__ */ new Error(`Failed to compile shader for type ${type} "${this.label}": ${gl.getShaderInfoLog(shader)}`);
+        gl.deleteShader(shader);
+        throw error;
+      }
+      return shader;
+    }
+    createProgram(vertexShader, fragmentShader) {
+      const gl = this.gl;
+      const program = gl.createProgram();
+      if (!program) throw new Error("Failed to create program");
+      gl.attachShader(program, vertexShader);
+      gl.attachShader(program, fragmentShader);
+      gl.linkProgram(program);
+      if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        const errLog = gl.getProgramInfoLog(program);
+        gl.deleteProgram(program);
+        throw new Error(`Failed to link program "${this.label}": ${errLog}`);
+      }
+      return program;
+    }
+    use() {
+      this.gl.useProgram(this.program);
+    }
+    notFoundUniforms = /* @__PURE__ */ new Set();
+    warnUniformNotFound(name) {
+      if (this.notFoundUniforms.has(name)) return;
+      this.notFoundUniforms.add(name);
+      console.warn(`Failed to get uniform location for program "${this.label}": ${name}`);
+    }
+    /**
+    * 取 uniform 位置并缓存。逐帧设置几十个 uniform 时，省下的
+    * `getUniformLocation` 调用相当可观。
+    */
+    getUniformLocation(name) {
+      let location2 = this.uniformLocations.get(name);
+      if (location2 === void 0) {
+        location2 = this.gl.getUniformLocation(this.program, name);
+        this.uniformLocations.set(name, location2);
+      }
+      if (location2 === null) this.warnUniformNotFound(name);
+      return location2;
+    }
+    setUniform1f(name, value) {
+      const location2 = this.getUniformLocation(name);
+      if (location2 !== null) this.gl.uniform1f(location2, value);
+    }
+    setUniform2f(name, value1, value2) {
+      const location2 = this.getUniformLocation(name);
+      if (location2 !== null) this.gl.uniform2f(location2, value1, value2);
+    }
+    setUniform3f(name, value1, value2, value3) {
+      const location2 = this.getUniformLocation(name);
+      if (location2 !== null) this.gl.uniform3f(location2, value1, value2, value3);
+    }
+    setUniform4f(name, value1, value2, value3, value4) {
+      const location2 = this.getUniformLocation(name);
+      if (location2 !== null) this.gl.uniform4f(location2, value1, value2, value3, value4);
+    }
+    setUniform1i(name, value) {
+      const location2 = this.getUniformLocation(name);
+      if (location2 !== null) this.gl.uniform1i(location2, value);
+    }
+    setUniform1fv(name, value) {
+      const location2 = this.getUniformLocation(name);
+      if (location2 !== null) this.gl.uniform1fv(location2, value);
+    }
+    setUniform3fv(name, value) {
+      const location2 = this.getUniformLocation(name);
+      if (location2 !== null) this.gl.uniform3fv(location2, value);
+    }
+    dispose() {
+      const gl = this.gl;
+      gl.deleteShader(this.vertexShader);
+      gl.deleteShader(this.fragmentShader);
+      gl.deleteProgram(this.program);
+      this.uniformLocations.clear();
+    }
+  };
+  function loadImage(imageUrl) {
+    return new Promise((resolve, reject) => {
+      const img = document.createElement("img");
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = imageUrl;
+      img.crossOrigin = "anonymous";
+      img.loading = "eager";
+    });
+  }
+  function loadVideo(videoUrl) {
+    return new Promise((resolve, reject) => {
+      const video = document.createElement("video");
+      let playing = false;
+      let timeupdate = false;
+      let rejected = false;
+      video.addEventListener("playing", () => {
+        playing = true;
+        checkReady();
+      }, true);
+      video.addEventListener("timeupdate", () => {
+        timeupdate = true;
+        checkReady();
+      }, true);
+      video.addEventListener("error", (err) => {
+        rejected = true;
+        reject(err);
+      }, true);
+      function checkReady() {
+        if (playing && timeupdate && !rejected) resolve(video);
+      }
+      video.src = videoUrl;
+      video.playsInline = true;
+      video.crossOrigin = "anonymous";
+      video.autoplay = true;
+      video.loop = true;
+      video.muted = true;
+      video.play();
+    });
+  }
+  function loadResourceFromUrl(url, isVideo = false) {
+    return isVideo ? loadVideo(url) : loadImage(url);
+  }
+  function loadResourceFromElement(element) {
+    return new Promise((resolve, reject) => {
+      if (element instanceof HTMLImageElement ? element.complete : element.readyState >= 3) resolve(element);
+      else {
+        element.onload = () => resolve(element);
+        element.onerror = reject;
+      }
+    });
+  }
+  function rgbToXyz(rgb) {
+    const [red, green, blue] = rgb;
+    const r = red / 255;
+    const g = green / 255;
+    const b = blue / 255;
+    return [
+      r * 0.4124 + g * 0.3576 + b * 0.1805,
+      r * 0.2126 + g * 0.7152 + b * 0.0722,
+      r * 0.0193 + g * 0.1192 + b * 0.9505
+    ];
+  }
+  function xyzToRgb(xyz) {
+    const [x, y, z] = xyz;
+    return [
+      (x * 3.2406 - y * 1.5372 - z * 0.4986) * 255,
+      (-x * 0.9689 + y * 1.8758 + z * 0.0415) * 255,
+      (x * 0.0557 - y * 0.204 + z * 1.057) * 255
+    ];
+  }
+  var D65 = {
+    x: 0.95047,
+    y: 1,
+    z: 1.0883
+  };
+  function fxyz(t) {
+    return t > 8856e-6 ? Math.cbrt(t) : 7.787 * t + 16 / 116;
+  }
+  function xyzToLab(xyz) {
+    const [x, y, z] = xyz;
+    return [
+      116 * fxyz(y / D65.y) - 16,
+      500 * (fxyz(x / D65.x) - fxyz(y / D65.y)),
+      200 * (fxyz(y / D65.y) - fxyz(z / D65.z))
+    ];
+  }
+  function labToXyz(lab) {
+    const delta = 6 / 29;
+    const [l, a, b] = lab;
+    const fy = (l + 16) / 116;
+    const fx = fy + a / 500;
+    const fz = fy - b / 200;
+    return [
+      fx > delta ? D65.x * fx * fx * fx : (fx - 16 / 116) * 3 * delta * delta * D65.x,
+      fy > delta ? D65.y * fy * fy * fy : (fy - 16 / 116) * 3 * delta * delta * D65.y,
+      fz > delta ? D65.z * fz * fz * fz : (fz - 16 / 116) * 3 * delta * delta * D65.z
+    ];
+  }
+  function rgbToLab(rgb) {
+    return xyzToLab(rgbToXyz(rgb));
+  }
+  function labToRgb(lab) {
+    return xyzToRgb(labToXyz(lab));
+  }
   function channelToLinear(value) {
     return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
   }
@@ -2550,8 +5808,583 @@
       0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s
     ];
   }
+  function yToLStar(y) {
+    if (y <= 216 / 24389) return y * (24389 / 27);
+    return Math.cbrt(y) * 116 - 16;
+  }
+  function lStar(rgb) {
+    const [r, g, b] = rgb;
+    return yToLStar(0.2126 * channelToLinear(r / 255) + 0.7152 * channelToLinear(g / 255) + 0.0722 * channelToLinear(b / 255));
+  }
+  function paletteRgbLStarIsDark(rgb) {
+    return lStar(rgb) <= 40;
+  }
+  function paletteRgbLStarIsLight(rgb) {
+    return lStar(rgb) >= 60;
+  }
+  function rgbLStarIsDark(rgb) {
+    return lStar(rgb) <= 50;
+  }
+  function distanceSquared(a, b) {
+    const [ax, ay, az] = a;
+    const [bx, by, bz] = b;
+    const dx = ax - bx;
+    const dy = ay - by;
+    const dz = az - bz;
+    return dx * dx + dy * dy + dz * dz;
+  }
+  function createRandom(seed) {
+    let state = seed >>> 0;
+    return () => {
+      state = state + 1831565813 >>> 0;
+      let t = state;
+      t = Math.imul(t ^ t >>> 15, t | 1);
+      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function seedFromHistogram(entries) {
+    let hash = 2166136261;
+    for (const { color, count } of entries) for (const value of [...color, count]) {
+      hash ^= Math.round(value) & 65535;
+      hash = Math.imul(hash, 16777619) >>> 0;
+    }
+    return hash >>> 0;
+  }
+  function isNotNearWhite(color) {
+    return color.some((channel) => channel <= 250);
+  }
+  function filterOrFallback(entries, predicate) {
+    const filtered = entries.filter(predicate);
+    return filtered.length > 0 ? filtered : [...entries];
+  }
+  function clampRgb(color) {
+    return color.map((channel) => Math.min(255, Math.max(0, channel)));
+  }
+  function groupColors(entries) {
+    const grouped = /* @__PURE__ */ new Map();
+    for (const entry of entries) {
+      const key = `${entry.color[0]},${entry.color[1]},${entry.color[2]}`;
+      const existing = grouped.get(key);
+      if (existing) existing.count += entry.count;
+      else grouped.set(key, {
+        color: [...entry.color],
+        count: entry.count
+      });
+    }
+    return [...grouped.values()];
+  }
+  function toLabEntries(entries) {
+    return entries.map((entry) => ({
+      color: rgbToLab(entry.color),
+      count: entry.count
+    }));
+  }
+  function colorsEqual(a, b) {
+    return a.every((value, i) => value === b[i]);
+  }
+  function findNearestCenterIndex(color, centers) {
+    let nearestIndex = 0;
+    let minDist = Number.POSITIVE_INFINITY;
+    for (let i = 0; i < centers.length; i++) {
+      const dist = distanceSquared(color, centers[i]);
+      if (dist < minDist) {
+        nearestIndex = i;
+        minDist = dist;
+      }
+    }
+    return nearestIndex;
+  }
+  function findFarthestColor(entries, centers) {
+    let farthest = [
+      0,
+      0,
+      0
+    ];
+    let maxDistance = Number.NEGATIVE_INFINITY;
+    for (const { color } of entries) {
+      let nearestDistance = Number.POSITIVE_INFINITY;
+      for (const center of centers) {
+        const dist = distanceSquared(color, center);
+        if (dist < nearestDistance) nearestDistance = dist;
+      }
+      if (nearestDistance > maxDistance) {
+        maxDistance = nearestDistance;
+        farthest = color;
+      }
+    }
+    return farthest;
+  }
+  function kMeansPlusPlusCenters(entries, clusterCount, random) {
+    const firstIndex = Math.floor(random() * entries.length);
+    const selectedIndices = /* @__PURE__ */ new Set([firstIndex]);
+    const centers = [entries[firstIndex].color];
+    for (let i = 1; i < clusterCount; i++) {
+      let accumulated = 0;
+      const accDistances = new Float64Array(entries.length);
+      for (let vectorId = 0; vectorId < entries.length; vectorId++) {
+        const target = entries[vectorId].color;
+        let minDistanceSquared = distanceSquared(centers[0], target);
+        for (let clusterIdx = 1; clusterIdx < i; clusterIdx++) {
+          const current = distanceSquared(centers[clusterIdx], target);
+          if (current < minDistanceSquared) minDistanceSquared = current;
+        }
+        accumulated += minDistanceSquared * entries[vectorId].count;
+        accDistances[vectorId] = accumulated;
+      }
+      if (accumulated <= Number.EPSILON) {
+        const nextIndex = entries.findIndex((_, index) => !selectedIndices.has(index));
+        if (nextIndex < 0) break;
+        selectedIndices.add(nextIndex);
+        centers.push(entries[nextIndex].color);
+        continue;
+      }
+      const targetPoint = random() * accumulated;
+      for (let vectorId = 0; vectorId < entries.length; vectorId++) if (!selectedIndices.has(vectorId) && accDistances[vectorId] >= targetPoint) {
+        selectedIndices.add(vectorId);
+        centers.push(entries[vectorId].color);
+        break;
+      }
+      if (centers.length === i) {
+        const nextIndex = entries.findIndex((_, index) => !selectedIndices.has(index));
+        if (nextIndex < 0) break;
+        selectedIndices.add(nextIndex);
+        centers.push(entries[nextIndex].color);
+      }
+    }
+    return centers;
+  }
+  function kMeansCluster(entries, numClusters, useKMeansPP, random) {
+    const clusterCount = Math.min(numClusters, entries.length);
+    if (clusterCount <= 0) return [];
+    let centers;
+    if (useKMeansPP) centers = kMeansPlusPlusCenters(entries, clusterCount, random);
+    else {
+      const shuffled = entries.map((entry) => entry.color);
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      centers = shuffled.slice(0, clusterCount);
+    }
+    const assignments = new Int32Array(entries.length);
+    let changed = true;
+    let iterations = 0;
+    while (changed && iterations < 250) {
+      changed = false;
+      iterations++;
+      for (let i = 0; i < entries.length; i++) assignments[i] = findNearestCenterIndex(entries[i].color, centers);
+      for (let i = 0; i < clusterCount; i++) {
+        let sumX = 0;
+        let sumY = 0;
+        let sumZ = 0;
+        let weight = 0;
+        for (let e = 0; e < entries.length; e++) {
+          if (assignments[e] !== i) continue;
+          const { color, count } = entries[e];
+          sumX += color[0] * count;
+          sumY += color[1] * count;
+          sumZ += color[2] * count;
+          weight += count;
+        }
+        if (weight === 0) {
+          centers[i] = findFarthestColor(entries, centers);
+          changed = true;
+          continue;
+        }
+        const newCenter = [
+          sumX / weight,
+          sumY / weight,
+          sumZ / weight
+        ];
+        if (!colorsEqual(newCenter, centers[i])) {
+          centers[i] = newCenter;
+          changed = true;
+        }
+      }
+    }
+    return centers;
+  }
+  function createThemeColor(sourceColors, ignoreWhite = false, toLab = false, random = createRandom(seedFromHistogram(sourceColors))) {
+    let entries = [...sourceColors];
+    if (ignoreWhite && entries.length > 1) entries = filterOrFallback(entries, (entry) => isNotNearWhite(entry.color));
+    if (toLab) entries = toLabEntries(entries);
+    entries = groupColors(entries);
+    const first = kMeansCluster(entries, 1, false, random)[0] ?? [
+      0,
+      0,
+      0
+    ];
+    const color = clampRgb(toLab ? labToRgb(first) : first);
+    return {
+      color,
+      colorIsDark: rgbLStarIsDark(color)
+    };
+  }
+  function createKMeansPalette(sourceColors, clusterCount, themeColor, ignoreWhite = false, toLab = false, useKMeansPP = false, intent = "accent", random = createRandom(seedFromHistogram(sourceColors))) {
+    let effectiveIgnoreWhite = ignoreWhite;
+    let effectiveUseKMeansPP = useKMeansPP;
+    if (sourceColors.length === 1) {
+      effectiveIgnoreWhite = false;
+      effectiveUseKMeansPP = false;
+    }
+    const colorIsDark = themeColor.colorIsDark;
+    let entries = filterOrFallback(sourceColors, (entry) => {
+      if (intent === "dominant") return !effectiveIgnoreWhite || isNotNearWhite(entry.color);
+      if (colorIsDark) return paletteRgbLStarIsDark(entry.color);
+      if (!effectiveIgnoreWhite) return paletteRgbLStarIsLight(entry.color);
+      return paletteRgbLStarIsLight(entry.color) && isNotNearWhite(entry.color);
+    });
+    if (toLab) entries = toLabEntries(entries);
+    entries = groupColors(entries);
+    const dominantColors = kMeansCluster(entries, clusterCount, effectiveUseKMeansPP, random).map((center) => clampRgb(toLab ? labToRgb(center) : center));
+    const palette = [];
+    for (let i = 0; i < clusterCount; i++) palette.push(dominantColors.length > 0 ? [...dominantColors[i % dominantColors.length]] : [
+      0,
+      0,
+      0
+    ]);
+    return {
+      palette,
+      paletteIsDark: colorIsDark,
+      themeColor
+    };
+  }
+  var MAX_COLOR_DEPTH = 8;
+  var OctreeNode = class OctreeNode2 {
+    owner;
+    parentNode;
+    indexInParent;
+    children = [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ];
+    childCount = 0;
+    leafNodeCount = 0;
+    sampleCount = 0;
+    redSum = 0;
+    greenSum = 0;
+    blueSum = 0;
+    constructor(owner, parentNode, indexInParent) {
+      this.owner = owner;
+      this.parentNode = parentNode;
+      this.indexInParent = indexInParent;
+    }
+    get averageColor() {
+      if (this.sampleCount === 0) return [
+        0,
+        0,
+        0
+      ];
+      return [
+        this.redSum / this.sampleCount,
+        this.greenSum / this.sampleCount,
+        this.blueSum / this.sampleCount
+      ];
+    }
+    addColor(red, green, blue, depth, sampleCount) {
+      this.sampleCount += sampleCount;
+      this.redSum += red * sampleCount;
+      this.greenSum += green * sampleCount;
+      this.blueSum += blue * sampleCount;
+      if (depth === MAX_COLOR_DEPTH) {
+        if (this.leafNodeCount === 0) this.leafNodeCount = 1;
+        return;
+      }
+      const bitShift = 7 - depth;
+      const childIndex = (red >> bitShift & 1) << 2 | (green >> bitShift & 1) << 1 | blue >> bitShift & 1;
+      let childNode = this.children[childIndex];
+      if (!childNode) {
+        childNode = new OctreeNode2(this.owner, this, childIndex);
+        this.children[childIndex] = childNode;
+        this.childCount++;
+        this.owner.registerNodeAtDepth(childNode, depth);
+      }
+      const previousLeafNodeCount = childNode.leafNodeCount;
+      childNode.addColor(red, green, blue, depth + 1, sampleCount);
+      this.leafNodeCount += childNode.leafNodeCount - previousLeafNodeCount;
+    }
+    collectPaletteColors(result) {
+      if (this.leafNodeCount === 0) return;
+      if (this.childCount === 0) {
+        result.push({
+          color: this.averageColor,
+          sampleCount: this.sampleCount
+        });
+        return;
+      }
+      for (const child of this.children) child?.collectPaletteColors(result);
+    }
+    mergeChildrenIntoThisNode() {
+      if (this.childCount === 0 || this.leafNodeCount <= 1) return;
+      const previousLeafNodeCount = this.leafNodeCount;
+      this.children.fill(null);
+      this.childCount = 0;
+      this.leafNodeCount = this.sampleCount > 0 ? 1 : 0;
+      const leafReduction = previousLeafNodeCount - this.leafNodeCount;
+      let parentNode = this.parentNode;
+      while (parentNode) {
+        parentNode.leafNodeCount -= leafReduction;
+        parentNode = parentNode.parentNode;
+      }
+    }
+    /** 合并会把整棵子树摘掉，被摘掉的节点仍留在深度索引里，需要显式排除。 */
+    isAttachedToRoot() {
+      let currentNode = this;
+      while (currentNode.parentNode) {
+        if (currentNode.parentNode.children[currentNode.indexInParent] !== currentNode) return false;
+        currentNode = currentNode.parentNode;
+      }
+      return true;
+    }
+  };
+  var OctreePaletteQuantizer = class {
+    rootNode = new OctreeNode(this, null, -1);
+    nodesByDepth = Array.from({ length: MAX_COLOR_DEPTH }, () => []);
+    registerNodeAtDepth(node, depth) {
+      this.nodesByDepth[depth].push(node);
+    }
+    addColor(color, sampleCount) {
+      if (sampleCount <= 0) return;
+      this.rootNode.addColor(color[0] & 255, color[1] & 255, color[2] & 255, 0, sampleCount);
+    }
+    getPalette(maxColorCount) {
+      if (maxColorCount <= 0 || this.rootNode.leafNodeCount === 0) return [];
+      const paletteColors = [];
+      this.rootNode.collectPaletteColors(paletteColors);
+      if (paletteColors.length <= maxColorCount) return paletteColors.map((entry) => entry.color);
+      paletteColors.sort((left, right) => {
+        const bySampleCount = right.sampleCount - left.sampleCount;
+        if (bySampleCount !== 0) return bySampleCount;
+        if (left.color[0] !== right.color[0]) return left.color[0] - right.color[0];
+        if (left.color[1] !== right.color[1]) return left.color[1] - right.color[1];
+        return left.color[2] - right.color[2];
+      });
+      return paletteColors.slice(0, Math.min(maxColorCount, paletteColors.length)).map((entry) => entry.color);
+    }
+    reduceToColorCount(targetColorCount) {
+      if (targetColorCount <= 0) return;
+      let remainingLeafReduction = this.rootNode.leafNodeCount - targetColorCount;
+      if (remainingLeafReduction <= 0) return;
+      for (let depth = 6; depth >= 0 && remainingLeafReduction > 0; depth--) {
+        const nodesAtDepth = this.nodesByDepth[depth];
+        nodesAtDepth.sort((left, right) => {
+          const byLeafCount = left.leafNodeCount - right.leafNodeCount;
+          if (byLeafCount !== 0) return byLeafCount;
+          return left.sampleCount - right.sampleCount;
+        });
+        for (let i = 0; i < nodesAtDepth.length && remainingLeafReduction > 0; i++) {
+          const candidate = nodesAtDepth[i];
+          if (candidate.childCount === 0) continue;
+          const leafReduction = candidate.leafNodeCount - 1;
+          if (leafReduction <= 0) continue;
+          if (leafReduction > remainingLeafReduction) continue;
+          remainingLeafReduction -= leafReduction;
+          candidate.mergeChildrenIntoThisNode();
+        }
+      }
+      while (this.rootNode.leafNodeCount > targetColorCount) {
+        const candidate = this.findBestMergeCandidate();
+        if (!candidate) break;
+        candidate.mergeChildrenIntoThisNode();
+      }
+    }
+    findBestMergeCandidate() {
+      let bestCandidate = null;
+      let bestLeafReduction = Number.POSITIVE_INFINITY;
+      let bestSampleCount = Number.POSITIVE_INFINITY;
+      for (let depth = 6; depth >= 0; depth--) for (const candidate of this.nodesByDepth[depth]) {
+        if (!candidate.isAttachedToRoot()) continue;
+        if (candidate.childCount === 0) continue;
+        const leafReduction = candidate.leafNodeCount - 1;
+        if (leafReduction <= 0) continue;
+        if (leafReduction < bestLeafReduction || leafReduction === bestLeafReduction && candidate.sampleCount < bestSampleCount) {
+          bestCandidate = candidate;
+          bestLeafReduction = leafReduction;
+          bestSampleCount = candidate.sampleCount;
+        }
+      }
+      return bestCandidate;
+    }
+  };
+  function createOctTreePalette(sourceColors, clusterCount, themeColor = createThemeColor(sourceColors, false, true), ignoreWhite = false, intent = "accent") {
+    const quantizer = new OctreePaletteQuantizer();
+    const effectiveIgnoreWhite = sourceColors.length === 1 ? false : ignoreWhite;
+    const filteredEntries = sourceColors.filter((entry) => {
+      const [r, g, b] = entry.color;
+      if (effectiveIgnoreWhite && r > 250 && g > 250 && b > 250) return false;
+      if (intent === "dominant") return true;
+      return themeColor.colorIsDark ? paletteRgbLStarIsDark(entry.color) : paletteRgbLStarIsLight(entry.color);
+    });
+    const entries = filteredEntries.length > 0 ? filteredEntries : sourceColors;
+    for (const entry of entries) quantizer.addColor(entry.color, entry.count);
+    quantizer.reduceToColorCount(clusterCount);
+    const quantizeResult = quantizer.getPalette(clusterCount);
+    let palette;
+    if (quantizeResult.length < clusterCount) {
+      palette = [];
+      for (let i = 0; i < clusterCount; i++) palette.push(quantizeResult.length > 0 ? [...quantizeResult[i % quantizeResult.length]] : [
+        0,
+        0,
+        0
+      ]);
+    } else palette = quantizeResult;
+    return {
+      palette,
+      paletteIsDark: themeColor.colorIsDark,
+      themeColor
+    };
+  }
+  function calculateSpatialDiversity(palette) {
+    if (palette.length === 0) return 0;
+    const labVectors = palette.map(rgbToLab);
+    let centroidL = 0;
+    let centroidA = 0;
+    let centroidB = 0;
+    for (const [l, a, b] of labVectors) {
+      centroidL += l;
+      centroidA += a;
+      centroidB += b;
+    }
+    centroidL /= labVectors.length;
+    centroidA /= labVectors.length;
+    centroidB /= labVectors.length;
+    let sumSquaredDistances = 0;
+    for (const [l, a, b] of labVectors) {
+      const dl = l - centroidL;
+      const da = a - centroidA;
+      const db = b - centroidB;
+      sumSquaredDistances += dl * dl + da * da + db * db;
+    }
+    return sumSquaredDistances / labVectors.length;
+  }
+  function countDistinctColors(palette) {
+    return new Set(palette.map((color) => color.join(","))).size;
+  }
+  function createAutoPalette(sourceColors, clusterCount, ignoreWhite = false, toLab = false, useKMeansPP = false, intent = "accent") {
+    const random = createRandom(seedFromHistogram(sourceColors));
+    const themeColor = createThemeColor(sourceColors, ignoreWhite, toLab, random);
+    const kmeansResult = createKMeansPalette(sourceColors, clusterCount, themeColor, ignoreWhite, toLab, useKMeansPP, intent, random);
+    const octTreeResult = createOctTreePalette(sourceColors, clusterCount, themeColor, ignoreWhite, intent);
+    const kMeansDistinct = countDistinctColors(kmeansResult.palette);
+    const octTreeDistinct = countDistinctColors(octTreeResult.palette);
+    if (kMeansDistinct !== octTreeDistinct) return kMeansDistinct > octTreeDistinct ? kmeansResult : octTreeResult;
+    const kMeansDiversity = calculateSpatialDiversity(kmeansResult.palette);
+    const octTreeDiversity = calculateSpatialDiversity(octTreeResult.palette);
+    if (intent === "dominant" || kmeansResult.paletteIsDark) return kMeansDiversity >= octTreeDiversity ? kmeansResult : octTreeResult;
+    return kMeansDiversity <= octTreeDiversity || octTreeDiversity === 0 ? kmeansResult : octTreeResult;
+  }
+  function createOffscreenCanvas(width, height) {
+    if (typeof OffscreenCanvas !== "undefined") return new OffscreenCanvas(width, height);
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    return canvas;
+  }
+  var DEFAULT_SAMPLE_SIZE = 64;
+  function toImageData(source, sampleSize) {
+    if (source instanceof ImageData) return source;
+    const [sourceWidth, sourceHeight] = source instanceof HTMLVideoElement ? [source.videoWidth, source.videoHeight] : source instanceof HTMLImageElement ? [source.naturalWidth, source.naturalHeight] : [source.width, source.height];
+    if (sourceWidth <= 0 || sourceHeight <= 0) return null;
+    const scale = Math.min(1, Math.max(1, Math.floor(sampleSize)) / Math.max(sourceWidth, sourceHeight));
+    const width = Math.max(1, Math.round(sourceWidth * scale));
+    const height = Math.max(1, Math.round(sourceHeight * scale));
+    const ctx = createOffscreenCanvas(width, height).getContext("2d", { willReadFrequently: true });
+    if (!ctx) return null;
+    ctx.drawImage(source, 0, 0, width, height);
+    return ctx.getImageData(0, 0, width, height);
+  }
+  function buildColorHistogram(source, sampleSize = DEFAULT_SAMPLE_SIZE) {
+    const imageData = toImageData(source, sampleSize);
+    if (!imageData) return [];
+    const { data } = imageData;
+    const counts = /* @__PURE__ */ new Map();
+    for (let i = 0; i < data.length; i += 4) {
+      if (data[i + 3] === 0) continue;
+      const key = data[i] << 16 | data[i + 1] << 8 | data[i + 2];
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+    return Array.from(counts, ([key, count]) => {
+      return {
+        color: [
+          key >> 16 & 255,
+          key >> 8 & 255,
+          key & 255
+        ],
+        count
+      };
+    });
+  }
+  function createPaletteFromImage(source, clusterCount, options = {}) {
+    const normalizedClusterCount = Math.max(0, Math.floor(clusterCount));
+    const { algorithm = "auto", ignoreWhite = false, toLab = false, useKMeansPP = false, intent = "accent", sampleSize } = options;
+    const entries = buildColorHistogram(source, sampleSize);
+    if (entries.length === 0) return {
+      palette: Array.from({ length: normalizedClusterCount }, () => [
+        0,
+        0,
+        0
+      ]),
+      paletteIsDark: true,
+      themeColor: {
+        color: [
+          0,
+          0,
+          0
+        ],
+        colorIsDark: true
+      }
+    };
+    switch (algorithm) {
+      case "kmeans":
+        return createKMeansPalette(entries, normalizedClusterCount, createThemeColor(entries, ignoreWhite, toLab), ignoreWhite, toLab, useKMeansPP, intent);
+      case "octtree":
+        return createOctTreePalette(entries, normalizedClusterCount, createThemeColor(entries, ignoreWhite, true), ignoreWhite, intent);
+      default:
+        return createAutoPalette(entries, normalizedClusterCount, ignoreWhite, toLab, useKMeansPP, intent);
+    }
+  }
+  var webgl1Support;
+  var highpFragmentSupport;
+  function withProbeContext(contextId, probe = () => true) {
+    try {
+      const canvas = document.createElement("canvas");
+      canvas.width = 1;
+      canvas.height = 1;
+      const gl = canvas.getContext(contextId);
+      if (!gl) return false;
+      try {
+        return probe(gl);
+      } finally {
+        gl.getExtension("WEBGL_lose_context")?.loseContext();
+      }
+    } catch {
+      return false;
+    }
+  }
+  function isWebGL1Supported() {
+    if (webgl1Support === void 0) webgl1Support = withProbeContext("webgl");
+    return webgl1Support;
+  }
+  function isHighpFragmentSupported() {
+    if (highpFragmentSupport === void 0) highpFragmentSupport = withProbeContext("webgl", (gl) => {
+      return (gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT)?.precision ?? 0) > 0;
+    });
+    return highpFragmentSupport;
+  }
+  var isolation_frag_default = "// WebGL1 port of Storyteller-Studios/Cirrus' IsolationEffect.\n// The random values and flow parameters are re-rolled per album by\n// IsolationRenderer, so a cover gets a stable composition while different\n// covers do not share a layout.\n//\n// Everything that is constant for a whole draw call -- the sRGB to OkLab\n// conversion of the four colors, and the randomised flow parameters -- is\n// computed on the CPU and uploaded as uniforms instead of being recomputed per\n// fragment.\n//\n// highp is required rather than optional: u_time grows without bound and the\n// noise hash amplifies it by ~44000, which mediump's 10 significant bits cannot\n// carry. IsolationRenderer.isSupported() refuses environments without highp\n// fragment precision, so this shader simply fails to compile there instead of\n// silently rendering a broken picture.\nprecision highp float;\n\nuniform vec2 u_resolution;\nuniform float u_time;\n// The four gradient colors, already converted to OkLab by the CPU.\nuniform vec3 u_colors[4];\nuniform vec3 u_random;\n// x = ripple frequency, y = ripple amplitude divisor,\n// z = flow speed (sign carries the direction), w = gradient axis tilt in radians\nuniform vec4 u_flowParams;\n// Extra jitter added to the noise-driven gradient angle, in radians.\nuniform float u_angleJitter;\nuniform bool u_enableLightWave;\nuniform bool u_enableDithering;\n\nconst float PI = 3.141592653589793;\n\nvec2 rotatePoint(vec2 point, float angle) {\n	float sine = sin(angle);\n	float cosine = cos(angle);\n	return vec2(\n		point.x * cosine - point.y * sine,\n		point.x * sine + point.y * cosine\n	);\n}\n\nvec2 gradientHash(vec2 point) {\n	return fract(\n		sin(\n			vec2(\n				dot(point, vec2(127.1, 311.7)),\n				dot(point, vec2(269.5, 183.3))\n			)\n		) * 43758.5453\n	);\n}\n\nfloat gradientNoise(vec2 point) {\n	vec2 cell = floor(point);\n	vec2 offset = fract(point);\n	vec2 eased = offset * offset * (3.0 - 2.0 * offset);\n	float lower = mix(\n		dot(-1.0 + 2.0 * gradientHash(cell), offset),\n		dot(-1.0 + 2.0 * gradientHash(cell + vec2(1.0, 0.0)), offset - vec2(1.0, 0.0)),\n		eased.x\n	);\n	float upper = mix(\n		dot(-1.0 + 2.0 * gradientHash(cell + vec2(0.0, 1.0)), offset - vec2(0.0, 1.0)),\n		dot(-1.0 + 2.0 * gradientHash(cell + vec2(1.0, 1.0)), offset - vec2(1.0, 1.0)),\n		eased.x\n	);\n	return 0.5 + 0.5 * mix(lower, upper, eased.y);\n}\n\nfloat encodeSrgb(float channel) {\n	return channel <= 0.0031308\n		? 12.92 * channel\n		: 1.055 * pow(max(channel, 0.0), 1.0 / 2.4) - 0.055;\n}\n\nvec3 okLabToSrgb(vec3 color) {\n	float lRoot = color.x + 0.3963377774 * color.y + 0.2158037573 * color.z;\n	float mRoot = color.x - 0.1055613458 * color.y - 0.0638541728 * color.z;\n	float sRoot = color.x - 0.0894841775 * color.y - 1.2914855480 * color.z;\n	float l = lRoot * lRoot * lRoot;\n	float m = mRoot * mRoot * mRoot;\n	float s = sRoot * sRoot * sRoot;\n	vec3 linearColor = vec3(\n		4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,\n		-1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,\n		-0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s\n	);\n	return vec3(\n		encodeSrgb(linearColor.r),\n		encodeSrgb(linearColor.g),\n		encodeSrgb(linearColor.b)\n	);\n}\n\nvec3 applyLightWave(vec3 okLabColor, vec2 uv) {\n	vec2 point = -1.0 + 1.5 * uv;\n	float x = point.x;\n	float y = point.y;\n	float time = u_time * 0.2;\n	float yPhase = y / 0.3;\n	float xPhase = x / 0.2;\n	float timeWarp = cos(sin(time) * 2.0) * 0.1;\n	float movement = (x + y) * 0.001 + timeWarp + sin(x * 0.01);\n	float wave1 =\n		sin(yPhase + 2.0 * time + u_random.x) * 0.5 -\n		yPhase -\n		xPhase * 0.5;\n	float wave2 = cos(\n		wave1 +\n			sin(movement + time) +\n			sin(y * 0.025 + time) +\n			sin((x + y) * 0.01) * 3.0 +\n			u_random.y\n	);\n	float wave3 = abs(\n		sin(\n			wave2 +\n				cos(yPhase + time + xPhase + wave2) +\n				cos(xPhase) +\n				sin(x * 0.001) +\n				u_random.z\n		)\n	);\n	// \u53D6\u8272\u4E0D\u518D\u538B\u6697\uFF0C\u7EAF\u767D\u5C01\u9762\u7684 L \u80FD\u5230 1.0\uFF0C\u4E58\u5B8C\u5FC5\u987B\u94B3\u4F4F\uFF1A\u8BA9 L \u6EA2\u51FA\u518D\u9760\u672B\u5C3E\u7684\n	// RGB \u94B3\u4F4D\u6536\u573A\u4F1A\u9010\u901A\u9053\u524A\u9876\uFF0C\u628A\u8272\u76F8\u4E5F\u4E00\u8D77\u6539\u6389\n	okLabColor.x = clamp(okLabColor.x * (1.1 - 0.1 * wave3), 0.0, 1.0);\n	return okLabToSrgb(okLabColor);\n}\n\nfloat interleavedGradientNoise(vec2 position) {\n	return fract(\n		52.9829189 * fract(dot(position, vec2(0.06711056, 0.00583715)))\n	);\n}\n\nvec3 screenSpaceDither(vec2 screenPosition) {\n	vec2 position = screenPosition + u_random.xy * 97.0;\n	vec3 noise = vec3(\n		interleavedGradientNoise(position),\n		interleavedGradientNoise(position + vec2(17.0, 59.0)),\n		interleavedGradientNoise(position + vec2(71.0, 23.0))\n	);\n	return (noise - 0.5) / 255.0;\n}\n\nvoid main() {\n	vec2 uv = gl_FragCoord.xy / u_resolution;\n	vec2 gradientPoint = uv - 0.5;\n	float degree = gradientNoise(\n		vec2(\n			u_time * 0.1 + u_random.x * 0.07,\n			gradientPoint.x * gradientPoint.y + u_random.y * 0.07\n		)\n	);\n	float noiseAngle = ((degree - 0.5) * 720.0 + 180.0) * PI / 180.0;\n	gradientPoint = rotatePoint(gradientPoint, noiseAngle + u_angleJitter);\n\n	float frequency = u_flowParams.x;\n	float amplitude = u_flowParams.y;\n	float speed = u_time * u_flowParams.z;\n	gradientPoint.x += sin(gradientPoint.y * frequency + speed) / amplitude;\n	gradientPoint.y +=\n		sin(gradientPoint.x * frequency * 1.5 + speed) / (amplitude * 0.5);\n\n	float rotatedX = rotatePoint(gradientPoint, u_flowParams.w).x;\n	float horizontal = smoothstep(-0.3, 0.2, rotatedX);\n	vec3 okLabColor = mix(\n		mix(u_colors[0], u_colors[1], horizontal),\n		mix(u_colors[2], u_colors[3], horizontal),\n		1.0 - smoothstep(-0.3, 0.5, gradientPoint.y)\n	);\n	vec3 color = u_enableLightWave\n		? applyLightWave(okLabColor, uv)\n		: okLabToSrgb(okLabColor);\n\n	if (u_enableDithering) {\n		color += screenSpaceDither(gl_FragCoord.xy);\n	}\n\n	gl_FragColor = vec4(clamp(color, 0.0, 1.0), 1.0);\n}\n";
+  var isolation_vert_default = "attribute vec2 a_position;\n\nvoid main() {\n	gl_Position = vec4(a_position, 0.0, 1.0);\n}\n";
+  var PALETTE_TRANSITION_MS = 1e3;
   var TAU = Math.PI * 2;
   var DEG_TO_RAD2 = Math.PI / 180;
+  var COLOR_COUNT = 4;
+  var ALBUM_RETRY_TIMES = 5;
   var DEFAULT_COLORS = [
     [
       0.09,
@@ -2574,7 +6407,350 @@
       0.13
     ]
   ];
+  function lerp(from, to, amount) {
+    return from + (to - from) * amount;
+  }
   var DEFAULT_OKLAB_COLORS = new Float32Array(DEFAULT_COLORS.flatMap(srgbToOkLab));
+  var IsolationRenderer = class IsolationRenderer2 extends BaseRenderer {
+    /**
+    * 新建实例时采用的默认选项。
+    *
+    * 该对象也可作为配置界面的初始值；实例创建后的调整统一走
+    * {@link setOptions}。
+    */
+    static defaultOptions = {
+      lightWave: false,
+      dithering: true,
+      paletteAlgorithm: "auto"
+    };
+    /** 当前环境是否支持该渲染器，选择渲染器前应先问一句。 */
+    static isSupported() {
+      return isWebGL1Supported() && isHighpFragmentSupported();
+    }
+    gl;
+    program;
+    quadBuffer;
+    contextLost = false;
+    _disposed = false;
+    options = { ...IsolationRenderer2.defaultOptions };
+    tickHandle = 0;
+    lastTickTime = 0;
+    lastFrameTime = 0;
+    frameTime = 0;
+    maxFPS = 30;
+    paused = false;
+    staticMode = false;
+    targetWidth = 0;
+    targetHeight = 0;
+    currentWidth = 0;
+    currentHeight = 0;
+    albumRequestId = 0;
+    albumSource;
+    /**
+    * 调色板过渡已经过的毫秒数。
+    *
+    * 这里刻意不用 `performance.now()`：过渡必须和渲染时钟走同一套时间，否则
+    * 暂停、静态模式或限帧的时候过渡进度会和画面对不上。
+    */
+    paletteTransitionElapsed = PALETTE_TRANSITION_MS;
+    /** 过渡起点、终点与当前帧的颜色，均为 OkLab，四个颜色首尾相接。 */
+    fromColors = new Float32Array(DEFAULT_OKLAB_COLORS);
+    toColors = new Float32Array(DEFAULT_OKLAB_COLORS);
+    colorBuffer = new Float32Array(DEFAULT_OKLAB_COLORS);
+    /** 取色结果的暂存区，避免每次换封面都新建数组。 */
+    nextColors = /* @__PURE__ */ new Float32Array(12);
+    randomValues = /* @__PURE__ */ new Float32Array(3);
+    /**
+    * 渐变流动参数，依次是波纹频率、波纹幅度、流动速度（已含方向）与渐变轴倾角
+    * （弧度）。原实现是在片元着色器里用随机哈希现算的，但它们对整个 draw call
+    * 都是常量，挪到 CPU 上由 {@link rollRandomParameters} 随机一次即可 —— 这里
+    * 含随机量，若真的逐帧重算，画面会逐帧剧烈跳变。
+    */
+    flowParams = /* @__PURE__ */ new Float32Array(4);
+    /** 渐变轴叠加在噪声角度上的抖动，单位弧度，同样是整帧常量。 */
+    angleJitter = 0;
+    paletteOrder = new Uint8Array(COLOR_COUNT);
+    constructor(canvas) {
+      super(canvas);
+      const gl = canvas.getContext("webgl", {
+        alpha: false,
+        antialias: false,
+        depth: false,
+        stencil: false,
+        powerPreference: "low-power"
+      });
+      if (!gl) {
+        this.disconnectResizeObserver();
+        throw new Error("WebGL not supported");
+      }
+      this.gl = gl;
+      try {
+        this.rollRandomParameters();
+        this.initializeGLResources();
+      } catch (e) {
+        this.program?.dispose();
+        gl.getExtension("WEBGL_lose_context")?.loseContext();
+        this.disconnectResizeObserver();
+        throw e;
+      }
+      canvas.addEventListener("webglcontextlost", this.onContextLost);
+      canvas.addEventListener("webglcontextrestored", this.onContextRestored);
+      this.requestTick();
+    }
+    initializeGLResources() {
+      const gl = this.gl;
+      this.program = new GLProgram(gl, isolation_vert_default, isolation_frag_default, "isolation");
+      const buffer = gl.createBuffer();
+      if (!buffer) throw new Error("Failed to create quad buffer");
+      this.quadBuffer = buffer;
+      gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+        -1,
+        -1,
+        1,
+        -1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        -1,
+        1,
+        1
+      ]), gl.STATIC_DRAW);
+      const position = this.program.attrs.a_position;
+      gl.enableVertexAttribArray(position);
+      gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
+    }
+    onContextLost = (event) => {
+      event.preventDefault();
+      this.contextLost = true;
+      if (this.tickHandle) {
+        cancelAnimationFrame(this.tickHandle);
+        this.tickHandle = 0;
+      }
+    };
+    onContextRestored = () => {
+      if (this._disposed) return;
+      try {
+        this.initializeGLResources();
+      } catch (e) {
+        this.program?.dispose();
+        console.error("Failed to restore WebGL resources", e);
+        return;
+      }
+      this.contextLost = false;
+      this.currentWidth = 0;
+      this.currentHeight = 0;
+      this.resetFrameClock();
+      this.requestTick();
+    };
+    /** 重掷整张封面期间保持不变的随机参数，避免画面逐帧跳变。 */
+    rollRandomParameters() {
+      for (let i = 0; i < this.randomValues.length; i++) this.randomValues[i] = Math.random() * TAU;
+      const direction = Math.random() < 0.5 ? -1 : 1;
+      this.flowParams[0] = lerp(4.5, 5.5, Math.random());
+      this.flowParams[1] = lerp(22, 29, Math.random());
+      this.flowParams[2] = lerp(0.65, 0.85, Math.random()) * direction;
+      this.flowParams[3] = (-5 + (Math.random() - 0.5) * 12) * DEG_TO_RAD2;
+      this.angleJitter = (Math.random() - 0.5) * 0.3;
+      for (let i = 0; i < this.paletteOrder.length; i++) this.paletteOrder[i] = i;
+      for (let i = this.paletteOrder.length - 1; i > 0; i--) {
+        const swapIndex = Math.floor(Math.random() * (i + 1));
+        [this.paletteOrder[i], this.paletteOrder[swapIndex]] = [this.paletteOrder[swapIndex], this.paletteOrder[i]];
+      }
+    }
+    /** 调整渲染器选项，会立即生效。 */
+    setOptions(patch) {
+      const previous = this.options;
+      const next = {
+        lightWave: patch.lightWave ?? previous.lightWave,
+        dithering: patch.dithering ?? previous.dithering,
+        paletteAlgorithm: patch.paletteAlgorithm ?? previous.paletteAlgorithm
+      };
+      const algorithmChanged = next.paletteAlgorithm !== previous.paletteAlgorithm;
+      this.options = next;
+      if (algorithmChanged && this.albumSource) this.updatePaletteFromSource(this.albumSource, true);
+      this.requestTick();
+    }
+    updatePaletteFromSource(source, immediate = false) {
+      let palette;
+      try {
+        palette = createPaletteFromImage(source, COLOR_COUNT, {
+          algorithm: this.options.paletteAlgorithm,
+          intent: "dominant"
+        }).palette;
+      } catch (err) {
+        console.warn("Failed to extract palette from album", err);
+        return;
+      }
+      for (let i = 0; i < COLOR_COUNT; i++) {
+        const [red, green, blue] = palette[this.paletteOrder[i]];
+        this.nextColors.set(srgbToOkLab([
+          red / 255,
+          green / 255,
+          blue / 255
+        ]), i * 3);
+      }
+      this.transitionToColors(this.nextColors, immediate);
+      this.requestTick();
+    }
+    transitionToColors(next, immediate) {
+      if (immediate) this.fromColors.set(next);
+      else {
+        this.updateColorBuffer();
+        this.fromColors.set(this.colorBuffer);
+      }
+      this.toColors.set(next);
+      this.paletteTransitionElapsed = immediate ? PALETTE_TRANSITION_MS : 0;
+    }
+    /** 按当前过渡进度就地更新 {@link colorBuffer}，不产生任何中间数组。 */
+    updateColorBuffer() {
+      if (this.paletteTransitionElapsed >= PALETTE_TRANSITION_MS) {
+        this.colorBuffer.set(this.toColors);
+        return;
+      }
+      const progress = this.paletteTransitionElapsed / PALETTE_TRANSITION_MS;
+      const eased = progress * progress * (3 - 2 * progress);
+      for (let i = 0; i < this.colorBuffer.length; i++) this.colorBuffer[i] = lerp(this.fromColors[i], this.toColors[i], eased);
+    }
+    checkIfResize() {
+      if (this.targetWidth === this.currentWidth && this.targetHeight === this.currentHeight) return;
+      super.onResize(this.targetWidth, this.targetHeight);
+      this.currentWidth = this.targetWidth;
+      this.currentHeight = this.targetHeight;
+      this.gl.viewport(0, 0, this.targetWidth, this.targetHeight);
+    }
+    onRedraw(frameTime, frameDelta) {
+      this.checkIfResize();
+      if (this.currentWidth <= 0 || this.currentHeight <= 0) return false;
+      if (this.paletteTransitionElapsed < PALETTE_TRANSITION_MS) this.paletteTransitionElapsed += frameDelta;
+      this.updateColorBuffer();
+      this.program.use();
+      this.program.setUniform2f("u_resolution", this.currentWidth, this.currentHeight);
+      this.program.setUniform1f("u_time", frameTime / 1e3);
+      this.program.setUniform3fv("u_colors[0]", this.colorBuffer);
+      this.program.setUniform3fv("u_random", this.randomValues);
+      this.program.setUniform4f("u_flowParams", this.flowParams[0], this.flowParams[1], this.flowParams[2], this.flowParams[3]);
+      this.program.setUniform1f("u_angleJitter", this.angleJitter);
+      this.program.setUniform1i("u_enableLightWave", this.options.lightWave ? 1 : 0);
+      this.program.setUniform1i("u_enableDithering", this.options.dithering ? 1 : 0);
+      const gl = this.gl;
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+      return this.paletteTransitionElapsed >= PALETTE_TRANSITION_MS;
+    }
+    onTick(tickTime) {
+      this.tickHandle = 0;
+      if (this.paused || this._disposed || this.contextLost) return;
+      const interval = 1e3 / this.maxFPS;
+      const delta = tickTime - this.lastTickTime;
+      if (delta < interval) {
+        this.requestTick();
+        return;
+      }
+      if (Number.isNaN(this.lastFrameTime)) this.lastFrameTime = tickTime;
+      const frameDelta = Math.min(tickTime - this.lastFrameTime, 250);
+      this.lastFrameTime = tickTime;
+      this.lastTickTime = tickTime - delta % interval;
+      this.frameTime += frameDelta * this.flowSpeed;
+      if (!(this.onRedraw(this.frameTime, frameDelta) && this.staticMode)) this.requestTick();
+      else this.lastFrameTime = NaN;
+    }
+    onTickBinded = this.onTick.bind(this);
+    requestTick() {
+      if (this._disposed || this.paused || this.contextLost) return;
+      if (!(this.maxFPS > 0)) return;
+      if (this.tickHandle === 0) this.tickHandle = requestAnimationFrame(this.onTickBinded);
+    }
+    onResize(width, height) {
+      this.targetWidth = Math.ceil(width);
+      this.targetHeight = Math.ceil(height);
+      this.requestTick();
+    }
+    setStaticMode(enable) {
+      this.staticMode = enable;
+      this.resetFrameClock();
+      this.requestTick();
+    }
+    setFPS(fps) {
+      this.maxFPS = fps;
+      this.resetFrameClock();
+      this.requestTick();
+    }
+    pause() {
+      if (this.tickHandle) {
+        cancelAnimationFrame(this.tickHandle);
+        this.tickHandle = 0;
+      }
+      this.paused = true;
+    }
+    resume() {
+      this.paused = false;
+      this.resetFrameClock();
+      this.requestTick();
+    }
+    resetFrameClock() {
+      const now = performance.now();
+      this.lastFrameTime = now;
+      this.lastTickTime = now;
+    }
+    /**
+    * 该次 `setAlbum` 是否还是最新的一次。
+    *
+    * 与 `MeshGradientRenderer` 不同，这里不看 `contextLost`：取色全在 CPU
+    * 上做，上下文丢了也照样能把调色板算完存着，等上下文恢复直接就能画。
+    */
+    isCurrentAlbumRequest(requestId) {
+      return !this._disposed && requestId === this.albumRequestId;
+    }
+    async setAlbum(albumSource, isVideo) {
+      const requestId = ++this.albumRequestId;
+      if (albumSource === void 0 || typeof albumSource === "string" && albumSource.trim().length === 0) {
+        this.albumSource = void 0;
+        this.transitionToColors(DEFAULT_OKLAB_COLORS, false);
+        this.requestTick();
+        return;
+      }
+      let source = null;
+      let remainRetryTimes = ALBUM_RETRY_TIMES;
+      while (!source && remainRetryTimes > 0) try {
+        source = typeof albumSource === "string" ? await loadResourceFromUrl(albumSource, isVideo) : await loadResourceFromElement(albumSource);
+      } catch (error) {
+        if (!this.isCurrentAlbumRequest(requestId)) return;
+        remainRetryTimes--;
+        console.warn(`failed on loading album resource, retrying (${remainRetryTimes})`, {
+          albumSource,
+          error
+        });
+      }
+      if (!this.isCurrentAlbumRequest(requestId)) return;
+      if (!source) {
+        console.error("Failed to load album resource", albumSource);
+        return;
+      }
+      this.albumSource = source;
+      this.rollRandomParameters();
+      this.updatePaletteFromSource(source);
+    }
+    setLowFreqVolume(_volume) {
+    }
+    setHasLyric(_hasLyric) {
+    }
+    dispose() {
+      if (this._disposed) return;
+      this._disposed = true;
+      if (this.tickHandle) {
+        cancelAnimationFrame(this.tickHandle);
+        this.tickHandle = 0;
+      }
+      this.canvas.removeEventListener("webglcontextlost", this.onContextLost);
+      this.canvas.removeEventListener("webglcontextrestored", this.onContextRestored);
+      this.program.dispose();
+      this.gl.deleteBuffer(this.quadBuffer);
+      this.gl.getExtension("WEBGL_lose_context")?.loseContext();
+      super.dispose();
+    }
+  };
   function clamp(x, min, max) {
     return Math.min(Math.max(x, min), max);
   }
@@ -2583,6 +6759,102 @@
   }
   function clampPositive(x) {
     return Math.max(0, x);
+  }
+  function blurImage(imageData, radius, quality) {
+    const pixels = imageData.data;
+    const width = imageData.width;
+    const height = imageData.height;
+    let rsum;
+    let gsum;
+    let bsum;
+    let asum;
+    let x;
+    let y;
+    let i;
+    let p2;
+    let p1;
+    let p22;
+    let yp;
+    let yi;
+    let yw;
+    const wm = width - 1;
+    const hm = height - 1;
+    const rad1x = radius + 1;
+    const divx = radius + rad1x;
+    const rad1y = radius + 1;
+    const div2 = 1 / (divx * (radius + rad1y));
+    const r = [];
+    const g = [];
+    const b = [];
+    const a = [];
+    const vmin = [];
+    const vmax = [];
+    while (quality-- > 0) {
+      yw = yi = 0;
+      for (y = 0; y < height; y++) {
+        rsum = pixels[yw] * rad1x;
+        gsum = pixels[yw + 1] * rad1x;
+        bsum = pixels[yw + 2] * rad1x;
+        asum = pixels[yw + 3] * rad1x;
+        for (i = 1; i <= radius; i++) {
+          p2 = yw + ((i > wm ? wm : i) << 2);
+          rsum += pixels[p2++];
+          gsum += pixels[p2++];
+          bsum += pixels[p2++];
+          asum += pixels[p2];
+        }
+        for (x = 0; x < width; x++) {
+          r[yi] = rsum;
+          g[yi] = gsum;
+          b[yi] = bsum;
+          a[yi] = asum;
+          if (y === 0) {
+            vmin[x] = Math.min(x + rad1x, wm) << 2;
+            vmax[x] = Math.max(x - radius, 0) << 2;
+          }
+          p1 = yw + vmin[x];
+          p22 = yw + vmax[x];
+          rsum += pixels[p1++] - pixels[p22++];
+          gsum += pixels[p1++] - pixels[p22++];
+          bsum += pixels[p1++] - pixels[p22++];
+          asum += pixels[p1] - pixels[p22];
+          yi++;
+        }
+        yw += width << 2;
+      }
+      for (x = 0; x < width; x++) {
+        yp = x;
+        rsum = r[yp] * rad1y;
+        gsum = g[yp] * rad1y;
+        bsum = b[yp] * rad1y;
+        asum = a[yp] * rad1y;
+        for (i = 1; i <= radius; i++) {
+          yp += i > hm ? 0 : width;
+          rsum += r[yp];
+          gsum += g[yp];
+          bsum += b[yp];
+          asum += a[yp];
+        }
+        yi = x << 2;
+        for (y = 0; y < height; y++) {
+          pixels[yi] = rsum * div2 + 0.5 | 0;
+          pixels[yi + 1] = gsum * div2 + 0.5 | 0;
+          pixels[yi + 2] = bsum * div2 + 0.5 | 0;
+          pixels[yi + 3] = asum * div2 + 0.5 | 0;
+          if (x === 0) {
+            vmin[y] = Math.min(y + rad1y, hm) * width;
+            vmax[y] = Math.max(y - radius, 0) * width;
+          }
+          p1 = x + vmin[y];
+          p22 = x + vmax[y];
+          rsum += r[p1] - r[p22];
+          gsum += g[p1] - g[p22];
+          bsum += b[p1] - b[p22];
+          asum += a[p1] - a[p22];
+          yi += width << 2;
+        }
+      }
+    }
   }
   var p = (cx, cy, x, y, ur = 0, vr = 0, up = 1, vp = 1) => Object.freeze({
     cx,
@@ -2745,8 +7017,1127 @@
       p(4, 4, 1, 1)
     ])
   ];
+  var randomRange = (min, max) => Math.random() * (max - min) + min;
+  function smoothstep(edge0, edge1, x) {
+    const t = clamp01((x - edge0) / (edge1 - edge0));
+    return t * t * (3 - 2 * t);
+  }
+  function smoothifyControlPoints(conf, w, h, iterations = 2, factor = 0.5, factorIterationModifier = 0.1) {
+    let grid = [];
+    let f = factor;
+    for (let j = 0; j < h; j++) {
+      grid[j] = [];
+      for (let i = 0; i < w; i++) grid[j][i] = conf[j * w + i];
+    }
+    const kernel = [
+      [
+        1,
+        2,
+        1
+      ],
+      [
+        2,
+        4,
+        2
+      ],
+      [
+        1,
+        2,
+        1
+      ]
+    ];
+    const kernelSum = 16;
+    for (let iter = 0; iter < iterations; iter++) {
+      const newGrid = [];
+      for (let j = 0; j < h; j++) {
+        newGrid[j] = [];
+        for (let i = 0; i < w; i++) {
+          if (i === 0 || i === w - 1 || j === 0 || j === h - 1) {
+            newGrid[j][i] = grid[j][i];
+            continue;
+          }
+          let sumX = 0;
+          let sumY = 0;
+          let sumUR = 0;
+          let sumVR = 0;
+          let sumUP = 0;
+          let sumVP = 0;
+          for (let dj = -1; dj <= 1; dj++) for (let di = -1; di <= 1; di++) {
+            const weight = kernel[dj + 1][di + 1];
+            const nb = grid[j + dj][i + di];
+            sumX += nb.x * weight;
+            sumY += nb.y * weight;
+            sumUR += nb.ur * weight;
+            sumVR += nb.vr * weight;
+            sumUP += nb.up * weight;
+            sumVP += nb.vp * weight;
+          }
+          const avgX = sumX / kernelSum;
+          const avgY = sumY / kernelSum;
+          const avgUR = sumUR / kernelSum;
+          const avgVR = sumVR / kernelSum;
+          const avgUP = sumUP / kernelSum;
+          const avgVP = sumVP / kernelSum;
+          const cur = grid[j][i];
+          const newX = cur.x * (1 - f) + avgX * f;
+          const newY = cur.y * (1 - f) + avgY * f;
+          const newUR = cur.ur * (1 - f) + avgUR * f;
+          const newVR = cur.vr * (1 - f) + avgVR * f;
+          const newUP = cur.up * (1 - f) + avgUP * f;
+          const newVP = cur.vp * (1 - f) + avgVP * f;
+          newGrid[j][i] = p(i, j, newX, newY, newUR, newVR, newUP, newVP);
+        }
+      }
+      grid = newGrid;
+      f = clamp01(f + factorIterationModifier);
+    }
+    for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) conf[j * w + i] = grid[j][i];
+  }
+  function noise(x, y) {
+    return fract(Math.sin(x * 12.9898 + y * 78.233) * 43758.5453);
+  }
+  function fract(x) {
+    return x - Math.floor(x);
+  }
+  function smoothNoise(x, y) {
+    const x0 = Math.floor(x);
+    const y0 = Math.floor(y);
+    const x1 = x0 + 1;
+    const y1 = y0 + 1;
+    const xf = x - x0;
+    const yf = y - y0;
+    const u = xf * xf * (3 - 2 * xf);
+    const v = yf * yf * (3 - 2 * yf);
+    const n00 = noise(x0, y0);
+    const n10 = noise(x1, y0);
+    const n01 = noise(x0, y1);
+    const n11 = noise(x1, y1);
+    const nx0 = n00 * (1 - u) + n10 * u;
+    const nx1 = n01 * (1 - u) + n11 * u;
+    return nx0 * (1 - v) + nx1 * v;
+  }
+  function computeNoiseGradient(perlinFn, x, y, epsilon = 1e-3) {
+    const n1 = perlinFn(x + epsilon, y);
+    const n2 = perlinFn(x - epsilon, y);
+    const n3 = perlinFn(x, y + epsilon);
+    const n4 = perlinFn(x, y - epsilon);
+    const dx = (n1 - n2) / (2 * epsilon);
+    const dy = (n3 - n4) / (2 * epsilon);
+    const len = Math.sqrt(dx * dx + dy * dy) || 1;
+    return [dx / len, dy / len];
+  }
+  function generateControlPoints(width, height, variationFraction = randomRange(0.4, 0.6), normalOffset = randomRange(0.3, 0.6), blendFactor = 0.8, smoothIters = Math.floor(randomRange(3, 5)), smoothFactor = randomRange(0.2, 0.3), smoothModifier = randomRange(-0.1, -0.05)) {
+    const w = width ?? Math.floor(randomRange(3, 6));
+    const h = height ?? Math.floor(randomRange(3, 6));
+    const conf = [];
+    const dx = w === 1 ? 0 : 2 / (w - 1);
+    const dy = h === 1 ? 0 : 2 / (h - 1);
+    for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) {
+      const baseX = (w === 1 ? 0 : i / (w - 1)) * 2 - 1;
+      const baseY = (h === 1 ? 0 : j / (h - 1)) * 2 - 1;
+      const isBorder = i === 0 || i === w - 1 || j === 0 || j === h - 1;
+      const pertX = isBorder ? 0 : randomRange(-variationFraction * dx, variationFraction * dx);
+      const pertY = isBorder ? 0 : randomRange(-variationFraction * dy, variationFraction * dy);
+      let x = baseX + pertX;
+      let y = baseY + pertY;
+      const ur = isBorder ? 0 : randomRange(-60, 60);
+      const vr = isBorder ? 0 : randomRange(-60, 60);
+      const up = isBorder ? 1 : randomRange(0.8, 1.2);
+      const vp = isBorder ? 1 : randomRange(0.8, 1.2);
+      if (!isBorder) {
+        const uNorm = (baseX + 1) / 2;
+        const vNorm = (baseY + 1) / 2;
+        const [nx, ny] = computeNoiseGradient(smoothNoise, uNorm, vNorm, 1e-3);
+        let offsetX = nx * normalOffset;
+        let offsetY = ny * normalOffset;
+        const weight = smoothstep(0, 1, Math.min(uNorm, 1 - uNorm, vNorm, 1 - vNorm));
+        offsetX *= weight;
+        offsetY *= weight;
+        x = x * (1 - blendFactor) + (x + offsetX) * blendFactor;
+        y = y * (1 - blendFactor) + (y + offsetY) * blendFactor;
+      }
+      conf.push(p(i, j, x, y, ur, vr, up, vp));
+    }
+    smoothifyControlPoints(conf, w, h, smoothIters, smoothFactor, smoothModifier);
+    return preset(w, h, conf);
+  }
+  var mesh_frag_default = "precision mediump float;\n\nvarying vec3 v_color;\nvarying vec2 v_uv;\nuniform sampler2D u_texture;\nuniform float u_volume;\nuniform float u_alpha;\nuniform float u_sinAngle;\nuniform float u_cosAngle;\n\n// \u9884\u8BA1\u7B97\u5E38\u91CF\nconst float INV_255 = 1.0 / 255.0;\nconst float HALF_INV_255 = 0.5 / 255.0;\nconst float GRADIENT_NOISE_A = 52.9829189;\nconst vec2 GRADIENT_NOISE_B = vec2(0.06711056, 0.00583715);\n\nfloat gradientNoise(in vec2 uv) {\n    return fract(GRADIENT_NOISE_A * fract(dot(uv, GRADIENT_NOISE_B)));\n}\n\nvoid main() {\n    float volumeEffect = u_volume * 2.0;\n\n    float dither = INV_255 * gradientNoise(gl_FragCoord.xy) - HALF_INV_255;\n\n    vec2 centeredUV = v_uv - vec2(0.2);\n\n    vec2 rotatedUV = vec2(\n        u_cosAngle * centeredUV.x - u_sinAngle * centeredUV.y,\n        u_sinAngle * centeredUV.x + u_cosAngle * centeredUV.y\n    );\n\n    vec2 finalUV = rotatedUV * max(0.001, 1.0 - volumeEffect) + vec2(0.5);\n    \n    vec4 result = texture2D(u_texture, finalUV);\n    \n    float alphaVolumeFactor = u_alpha * max(0.5, 1.0 - u_volume * 0.5);\n    result.rgb *= v_color * alphaVolumeFactor;\n    result.a *= alphaVolumeFactor;\n    \n    result.rgb += vec3(dither);\n    \n    float dist = distance(v_uv, vec2(0.5));\n    float vignette = smoothstep(0.8, 0.3, dist);\n    float mask = 0.6 + vignette * 0.4;\n    result.rgb *= mask;\n    \n    gl_FragColor = result;\n}\n";
+  var mesh_vert_default = "precision mediump float;\n\nattribute vec2 a_pos;\nattribute vec3 a_color;\nattribute vec2 a_uv;\nvarying vec3 v_color;\nvarying vec2 v_uv;\n\nuniform float u_aspect;\n\nvoid main() {\n    v_color = a_color;\n    v_uv = a_uv;\n    vec2 pos = a_pos;\n    if (u_aspect > 1.0) {\n        pos.y *= u_aspect;\n    } else {\n        pos.x /= u_aspect;\n    }\n    gl_Position = vec4(pos, 0.0, 1.0);\n}\n";
+  var quadVertShader = `
+attribute vec2 a_pos;
+varying vec2 v_uv;
+void main() {
+    gl_Position = vec4(a_pos, 0.0, 1.0);
+    v_uv = a_pos * 0.5 + 0.5;
+}
+`;
+  var quadFragShader = `
+precision mediump float;
+varying vec2 v_uv;
+uniform sampler2D u_texture;
+uniform float u_alpha;
+void main() {
+    vec4 color = texture2D(u_texture, v_uv);
+    gl_FragColor = vec4(color.rgb, color.a * u_alpha);
+}
+`;
+  function easeInOutSine(x) {
+    return -(Math.cos(Math.PI * x) - 1) / 2;
+  }
+  var Mesh = class {
+    gl;
+    attrPos;
+    attrColor;
+    attrUV;
+    vertexWidth = 0;
+    vertexHeight = 0;
+    vertexBuffer;
+    indexBuffer;
+    vertexData;
+    indexData;
+    vertexIndexLength = 0;
+    wireFrame = false;
+    constructor(gl, attrPos, attrColor, attrUV) {
+      this.gl = gl;
+      this.attrPos = attrPos;
+      this.attrColor = attrColor;
+      this.attrUV = attrUV;
+      const vertexBuf = gl.createBuffer();
+      if (!vertexBuf) throw new Error("Failed to create vertex buffer");
+      this.vertexBuffer = vertexBuf;
+      const indexBuf = gl.createBuffer();
+      if (!indexBuf) throw new Error("Failed to create index buffer");
+      this.indexBuffer = indexBuf;
+      this.bind();
+      this.vertexData = /* @__PURE__ */ new Float32Array(0);
+      this.indexData = /* @__PURE__ */ new Uint16Array(0);
+      this.resize(2, 2);
+      this.update();
+    }
+    setWireFrame(enable) {
+      this.wireFrame = enable;
+      this.resize(this.vertexWidth, this.vertexHeight);
+    }
+    setVertexPos(vx, vy, x, y) {
+      const idx = (vx + vy * this.vertexWidth) * 7;
+      if (idx >= this.vertexData.length - 1) {
+        console.warn("Vertex position out of range", idx, this.vertexData.length);
+        return;
+      }
+      this.vertexData[idx] = x;
+      this.vertexData[idx + 1] = y;
+    }
+    setVertexColor(vx, vy, r, g, b) {
+      const idx = (vx + vy * this.vertexWidth) * 7 + 2;
+      if (idx >= this.vertexData.length - 2) {
+        console.warn("Vertex color out of range", idx, this.vertexData.length);
+        return;
+      }
+      this.vertexData[idx] = r;
+      this.vertexData[idx + 1] = g;
+      this.vertexData[idx + 2] = b;
+    }
+    setVertexUV(vx, vy, x, y) {
+      const idx = (vx + vy * this.vertexWidth) * 7 + 5;
+      if (idx >= this.vertexData.length - 1) {
+        console.warn("Vertex UV out of range", idx, this.vertexData.length);
+        return;
+      }
+      this.vertexData[idx] = x;
+      this.vertexData[idx + 1] = y;
+    }
+    setVertexData(vx, vy, x, y, r, g, b, u, v) {
+      const idx = (vx + vy * this.vertexWidth) * 7;
+      if (idx >= this.vertexData.length - 6) {
+        console.warn("Vertex data out of range", idx, this.vertexData.length);
+        return;
+      }
+      const data = this.vertexData;
+      data[idx] = x;
+      data[idx + 1] = y;
+      data[idx + 2] = r;
+      data[idx + 3] = g;
+      data[idx + 4] = b;
+      data[idx + 5] = u;
+      data[idx + 6] = v;
+    }
+    getVertexIndexLength() {
+      return this.vertexIndexLength;
+    }
+    draw() {
+      const gl = this.gl;
+      if (this.wireFrame) gl.drawElements(gl.LINES, this.vertexIndexLength, gl.UNSIGNED_SHORT, 0);
+      else gl.drawElements(gl.TRIANGLES, this.vertexIndexLength, gl.UNSIGNED_SHORT, 0);
+    }
+    resize(vertexWidth, vertexHeight) {
+      this.vertexWidth = vertexWidth;
+      this.vertexHeight = vertexHeight;
+      this.vertexIndexLength = vertexWidth * vertexHeight * 6;
+      if (this.wireFrame) this.vertexIndexLength = vertexWidth * vertexHeight * 10;
+      const vertexData = new Float32Array(vertexWidth * vertexHeight * 7);
+      const indexData = new Uint16Array(this.vertexIndexLength);
+      this.vertexData = vertexData;
+      this.indexData = indexData;
+      for (let y = 0; y < vertexHeight; y++) for (let x = 0; x < vertexWidth; x++) {
+        const px = x / (vertexWidth - 1) * 2 - 1;
+        const py = y / (vertexHeight - 1) * 2 - 1;
+        this.setVertexPos(x, y, px || 0, py || 0);
+        this.setVertexColor(x, y, 1, 1, 1);
+        this.setVertexUV(x, y, x / (vertexWidth - 1), y / (vertexHeight - 1));
+      }
+      for (let y = 0; y < vertexHeight - 1; y++) for (let x = 0; x < vertexWidth - 1; x++) if (this.wireFrame) {
+        const idx = (y * vertexWidth + x) * 10;
+        indexData[idx] = y * vertexWidth + x;
+        indexData[idx + 1] = y * vertexWidth + x + 1;
+        indexData[idx + 2] = y * vertexWidth + x + 1;
+        indexData[idx + 3] = (y + 1) * vertexWidth + x;
+        indexData[idx + 4] = (y + 1) * vertexWidth + x;
+        indexData[idx + 5] = (y + 1) * vertexWidth + x + 1;
+        indexData[idx + 6] = (y + 1) * vertexWidth + x + 1;
+        indexData[idx + 7] = y * vertexWidth + x + 1;
+        indexData[idx + 8] = y * vertexWidth + x;
+        indexData[idx + 9] = (y + 1) * vertexWidth + x;
+      } else {
+        const idx = (y * vertexWidth + x) * 6;
+        indexData[idx] = y * vertexWidth + x;
+        indexData[idx + 1] = y * vertexWidth + x + 1;
+        indexData[idx + 2] = (y + 1) * vertexWidth + x;
+        indexData[idx + 3] = y * vertexWidth + x + 1;
+        indexData[idx + 4] = (y + 1) * vertexWidth + x + 1;
+        indexData[idx + 5] = (y + 1) * vertexWidth + x;
+      }
+      const gl = this.gl;
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
+      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this.indexData, gl.STATIC_DRAW);
+    }
+    bind() {
+      const gl = this.gl;
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
+      if (this.attrPos !== void 0) {
+        gl.vertexAttribPointer(this.attrPos, 2, gl.FLOAT, false, 28, 0);
+        gl.enableVertexAttribArray(this.attrPos);
+      }
+      if (this.attrColor !== void 0) {
+        gl.vertexAttribPointer(this.attrColor, 3, gl.FLOAT, false, 28, 8);
+        gl.enableVertexAttribArray(this.attrColor);
+      }
+      if (this.attrUV !== void 0) {
+        gl.vertexAttribPointer(this.attrUV, 2, gl.FLOAT, false, 28, 20);
+        gl.enableVertexAttribArray(this.attrUV);
+      }
+    }
+    update() {
+      const gl = this.gl;
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, this.vertexData, gl.DYNAMIC_DRAW);
+    }
+    dispose() {
+      this.gl.deleteBuffer(this.vertexBuffer);
+      this.gl.deleteBuffer(this.indexBuffer);
+    }
+  };
+  var ControlPoint = class {
+    color = Vec3.fromValues(1, 1, 1);
+    location = Vec2.fromValues(0, 0);
+    uTangent = Vec2.fromValues(0, 0);
+    vTangent = Vec2.fromValues(0, 0);
+    _uRot = 0;
+    _vRot = 0;
+    _uScale = 1;
+    _vScale = 1;
+    constructor() {
+      Object.seal(this);
+    }
+    get uRot() {
+      return this._uRot;
+    }
+    get vRot() {
+      return this._vRot;
+    }
+    set uRot(value) {
+      this._uRot = value;
+      this.updateUTangent();
+    }
+    set vRot(value) {
+      this._vRot = value;
+      this.updateVTangent();
+    }
+    get uScale() {
+      return this._uScale;
+    }
+    get vScale() {
+      return this._vScale;
+    }
+    set uScale(value) {
+      this._uScale = value;
+      this.updateUTangent();
+    }
+    set vScale(value) {
+      this._vScale = value;
+      this.updateVTangent();
+    }
+    updateUTangent() {
+      this.uTangent[0] = Math.cos(this._uRot) * this._uScale;
+      this.uTangent[1] = Math.sin(this._uRot) * this._uScale;
+    }
+    updateVTangent() {
+      this.vTangent[0] = -Math.sin(this._vRot) * this._vScale;
+      this.vTangent[1] = Math.cos(this._vRot) * this._vScale;
+    }
+  };
   var H = Mat4.fromValues(2, -2, 1, 1, -3, 3, -2, -1, 0, 0, 1, 0, 1, 0, 0, 0);
   var H_T = Mat4.clone(H).transpose();
+  function meshCoefficients(p00, p01, p10, p11, axis, output = Mat4.create()) {
+    const l = (p2) => p2.location[axis];
+    const u = (p2) => p2.uTangent[axis];
+    const v = (p2) => p2.vTangent[axis];
+    output[0] = l(p00);
+    output[1] = l(p01);
+    output[2] = v(p00);
+    output[3] = v(p01);
+    output[4] = l(p10);
+    output[5] = l(p11);
+    output[6] = v(p10);
+    output[7] = v(p11);
+    output[8] = u(p00);
+    output[9] = u(p01);
+    output[10] = 0;
+    output[11] = 0;
+    output[12] = u(p10);
+    output[13] = u(p11);
+    output[14] = 0;
+    output[15] = 0;
+    return output;
+  }
+  function colorCoefficients(p00, p01, p10, p11, axis, output = Mat4.create()) {
+    const c = (p2) => p2.color[axis];
+    output.fill(0);
+    output[0] = c(p00);
+    output[1] = c(p01);
+    output[4] = c(p10);
+    output[5] = c(p11);
+    return output;
+  }
+  var Map2D = class {
+    _width = 0;
+    _height = 0;
+    _data = [];
+    constructor(width, height) {
+      this.resize(width, height);
+      Object.seal(this);
+    }
+    resize(width, height) {
+      this._width = width;
+      this._height = height;
+      this._data = new Array(width * height).fill(0);
+    }
+    set(x, y, value) {
+      this._data[x + y * this._width] = value;
+    }
+    get(x, y) {
+      return this._data[x + y * this._width];
+    }
+    get width() {
+      return this._width;
+    }
+    get height() {
+      return this._height;
+    }
+  };
+  var BHPMesh = class extends Mesh {
+    /**
+    * 细分级别，越大曲线越平滑，但是性能消耗也越大
+    */
+    _subDivisions = 10;
+    _controlPoints = new Map2D(3, 3);
+    constructor(gl, attrPos, attrColor, attrUV) {
+      super(gl, attrPos, attrColor, attrUV);
+      this.resizeControlPoints(3, 3);
+      Object.seal(this);
+    }
+    setWireFrame(enable) {
+      super.setWireFrame(enable);
+      this.updateMesh();
+    }
+    /**
+    * 以当前的控制点矩阵大小和细分级别为参考重新设置细分级别，此操作不会重设控制点数据
+    * @param subDivisions 细分级别
+    */
+    resetSubdivition(subDivisions) {
+      this._subDivisions = subDivisions;
+      super.resize((this._controlPoints.width - 1) * subDivisions, (this._controlPoints.height - 1) * subDivisions);
+    }
+    /**
+    * 重设控制点矩阵尺寸，将会重置所有控制点的颜色和坐标数据
+    * 请在调用此方法后重新设置颜色和坐标，并调用 updateMesh 方法更新网格
+    * @param width 控制点宽度数量，必须大于等于 2
+    * @param height 控制点高度数量，必须大于等于 2
+    */
+    resizeControlPoints(width, height) {
+      if (!(width >= 2 && height >= 2)) throw new Error("Control points must be larger than 3x3 or equal");
+      this._controlPoints.resize(width, height);
+      for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) {
+        const point = new ControlPoint();
+        point.location.x = x / (width - 1) * 2 - 1;
+        point.location.y = y / (height - 1) * 2 - 1;
+        point.uTangent.x = 2 / (width - 1);
+        point.vTangent.y = 2 / (height - 1);
+        this._controlPoints.set(x, y, point);
+      }
+      this.resetSubdivition(this._subDivisions);
+    }
+    /**
+    * 获取指定位置的控制点，然后可以设置颜色和坐标属性
+    * 留意颜色属性和坐标属性的值范围均参考 WebGL 的定义
+    * 即颜色各个组件取值 [0-1]，坐标取值 [-1, 1]
+    * 点的位置以画面左下角为原点 (0,0)
+    * @param x 需要获取的控制点的 x 坐标
+    * @param y 需要获取的控制点的 y 坐标
+    * @returns 控制点对象
+    */
+    getControlPoint(x, y) {
+      return this._controlPoints.get(x, y);
+    }
+    tempX = Mat4.create();
+    tempY = Mat4.create();
+    tempR = Mat4.create();
+    tempG = Mat4.create();
+    tempB = Mat4.create();
+    tempXAcc = Mat4.create();
+    tempYAcc = Mat4.create();
+    tempRAcc = Mat4.create();
+    tempGAcc = Mat4.create();
+    tempBAcc = Mat4.create();
+    tempUx = Vec4.create();
+    tempUy = Vec4.create();
+    tempUr = Vec4.create();
+    tempUg = Vec4.create();
+    tempUb = Vec4.create();
+    precomputeMatrix(M, output) {
+      output.copy(M).transpose();
+      Mat4.mul(output, output, H);
+      Mat4.mul(output, H_T, output);
+      return output;
+    }
+    /**
+    * 更新最终呈现的网格数据，此方法应在所有控制点或细分参数的操作完成后调用
+    */
+    updateMesh() {
+      const subDivM1 = this._subDivisions - 1;
+      const tW = subDivM1 * (this._controlPoints.height - 1);
+      const tH = subDivM1 * (this._controlPoints.width - 1);
+      const controlPointsWidth = this._controlPoints.width;
+      const controlPointsHeight = this._controlPoints.height;
+      const subDivisions = this._subDivisions;
+      const invSubDivM1 = 1 / subDivM1;
+      const invTH = 1 / tH;
+      const invTW = 1 / tW;
+      const normPowers = new Float32Array(subDivisions * 4);
+      for (let i = 0; i < subDivisions; i++) {
+        const norm = i * invSubDivM1;
+        const idx = i * 4;
+        normPowers[idx] = norm ** 3;
+        normPowers[idx + 1] = norm ** 2;
+        normPowers[idx + 2] = norm;
+        normPowers[idx + 3] = 1;
+      }
+      for (let x = 0; x < controlPointsWidth - 1; x++) for (let y = 0; y < controlPointsHeight - 1; y++) {
+        const p00 = this._controlPoints.get(x, y);
+        const p01 = this._controlPoints.get(x, y + 1);
+        const p10 = this._controlPoints.get(x + 1, y);
+        const p11 = this._controlPoints.get(x + 1, y + 1);
+        meshCoefficients(p00, p01, p10, p11, "x", this.tempX);
+        meshCoefficients(p00, p01, p10, p11, "y", this.tempY);
+        colorCoefficients(p00, p01, p10, p11, "r", this.tempR);
+        colorCoefficients(p00, p01, p10, p11, "g", this.tempG);
+        colorCoefficients(p00, p01, p10, p11, "b", this.tempB);
+        this.precomputeMatrix(this.tempX, this.tempXAcc);
+        this.precomputeMatrix(this.tempY, this.tempYAcc);
+        this.precomputeMatrix(this.tempR, this.tempRAcc);
+        this.precomputeMatrix(this.tempG, this.tempGAcc);
+        this.precomputeMatrix(this.tempB, this.tempBAcc);
+        const sX = x / (controlPointsWidth - 1);
+        const sY = y / (controlPointsHeight - 1);
+        const baseVx = y * subDivisions;
+        const baseVy = x * subDivisions;
+        for (let u = 0; u < subDivisions; u++) {
+          const vxOffset = baseVx + u;
+          const uIdx = u * 4;
+          this.tempUx[0] = normPowers[uIdx];
+          this.tempUx[1] = normPowers[uIdx + 1];
+          this.tempUx[2] = normPowers[uIdx + 2];
+          this.tempUx[3] = normPowers[uIdx + 3];
+          Vec4.transformMat4(this.tempUx, this.tempUx, this.tempXAcc);
+          this.tempUy[0] = normPowers[uIdx];
+          this.tempUy[1] = normPowers[uIdx + 1];
+          this.tempUy[2] = normPowers[uIdx + 2];
+          this.tempUy[3] = normPowers[uIdx + 3];
+          Vec4.transformMat4(this.tempUy, this.tempUy, this.tempYAcc);
+          this.tempUr[0] = normPowers[uIdx];
+          this.tempUr[1] = normPowers[uIdx + 1];
+          this.tempUr[2] = normPowers[uIdx + 2];
+          this.tempUr[3] = normPowers[uIdx + 3];
+          Vec4.transformMat4(this.tempUr, this.tempUr, this.tempRAcc);
+          this.tempUg[0] = normPowers[uIdx];
+          this.tempUg[1] = normPowers[uIdx + 1];
+          this.tempUg[2] = normPowers[uIdx + 2];
+          this.tempUg[3] = normPowers[uIdx + 3];
+          Vec4.transformMat4(this.tempUg, this.tempUg, this.tempGAcc);
+          this.tempUb[0] = normPowers[uIdx];
+          this.tempUb[1] = normPowers[uIdx + 1];
+          this.tempUb[2] = normPowers[uIdx + 2];
+          this.tempUb[3] = normPowers[uIdx + 3];
+          Vec4.transformMat4(this.tempUb, this.tempUb, this.tempBAcc);
+          for (let v = 0; v < subDivisions; v++) {
+            const vy = baseVy + v;
+            const vIdx = v * 4;
+            const v0 = normPowers[vIdx];
+            const v1 = normPowers[vIdx + 1];
+            const v2 = normPowers[vIdx + 2];
+            const v3 = normPowers[vIdx + 3];
+            const px = v0 * this.tempUx[0] + v1 * this.tempUx[1] + v2 * this.tempUx[2] + v3 * this.tempUx[3];
+            const py = v0 * this.tempUy[0] + v1 * this.tempUy[1] + v2 * this.tempUy[2] + v3 * this.tempUy[3];
+            const pr = v0 * this.tempUr[0] + v1 * this.tempUr[1] + v2 * this.tempUr[2] + v3 * this.tempUr[3];
+            const pg = v0 * this.tempUg[0] + v1 * this.tempUg[1] + v2 * this.tempUg[2] + v3 * this.tempUg[3];
+            const pb = v0 * this.tempUb[0] + v1 * this.tempUb[1] + v2 * this.tempUb[2] + v3 * this.tempUb[3];
+            const uvX = sX + v * invTH;
+            const uvY = 1 - sY - u * invTW;
+            this.setVertexData(vxOffset, vy, px, py, pr, pg, pb, uvX, uvY);
+          }
+        }
+      }
+      this.update();
+    }
+  };
+  var GLTexture = class {
+    gl;
+    tex;
+    constructor(gl, albumImageData) {
+      this.gl = gl;
+      const albumTexture = gl.createTexture();
+      if (!albumTexture) throw new Error("Failed to create texture");
+      this.tex = albumTexture;
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, albumTexture);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, albumImageData);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT);
+    }
+    bind() {
+      this.gl.bindTexture(this.gl.TEXTURE_2D, this.tex);
+    }
+    dispose() {
+      this.gl.deleteTexture(this.tex);
+    }
+  };
+  var MeshGradientRenderer = class extends BaseRenderer {
+    /**
+    * 当前环境是否支持此渲染器
+    */
+    static isSupported() {
+      return isWebGL1Supported();
+    }
+    gl;
+    contextLost = false;
+    albumRequestId = 0;
+    albumLoadController;
+    lastImageData;
+    lastFrameTime = 0;
+    frameTime = 0;
+    lastTickTime = 0;
+    smoothedVolume = 0;
+    volume = 0;
+    tickHandle = 0;
+    maxFPS = 60;
+    paused = false;
+    staticMode = false;
+    mainProgram;
+    quadProgram;
+    quadBuffer;
+    fbo = null;
+    fboTexture = null;
+    manualControl = false;
+    reduceImageSizeCanvas = createOffscreenCanvas(32, 32);
+    targetSize = Vec2.fromValues(0, 0);
+    currentSize = Vec2.fromValues(0, 0);
+    isNoCover = true;
+    meshStates = [];
+    _disposed = false;
+    frameCount = 0;
+    lastFPSUpdate = 0;
+    currentFPS = 0;
+    enablePerformanceMonitoring = false;
+    isCurrentAlbumRequest(requestId) {
+      return !this._disposed && !this.contextLost && requestId === this.albumRequestId;
+    }
+    initializeGLResources() {
+      const gl = this.gl;
+      if (!gl.getExtension("EXT_color_buffer_float")) console.warn("EXT_color_buffer_float not supported");
+      if (!gl.getExtension("EXT_float_blend")) console.warn("EXT_float_blend not supported");
+      if (!gl.getExtension("OES_texture_float_linear")) console.warn("OES_texture_float_linear not supported");
+      if (!gl.getExtension("OES_texture_float")) console.warn("OES_texture_float not supported");
+      gl.enable(gl.BLEND);
+      gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+      gl.enable(gl.DEPTH_TEST);
+      gl.depthFunc(gl.ALWAYS);
+      this.mainProgram = new GLProgram(gl, mesh_vert_default, mesh_frag_default, "main-program-mg");
+      this.quadProgram = new GLProgram(gl, quadVertShader, quadFragShader, "quad-program");
+      const quadBuffer = gl.createBuffer();
+      if (!quadBuffer) throw new Error("Failed to create quad buffer");
+      this.quadBuffer = quadBuffer;
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.quadBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+        -1,
+        -1,
+        1,
+        -1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        -1,
+        1,
+        1
+      ]), gl.STATIC_DRAW);
+    }
+    createMeshState(imageData) {
+      const newMesh = new BHPMesh(this.gl, this.mainProgram.attrs.a_pos, this.mainProgram.attrs.a_color, this.mainProgram.attrs.a_uv);
+      newMesh.resetSubdivition(50);
+      const chosenPreset = Math.random() > 0.8 ? generateControlPoints(6, 6) : CONTROL_POINT_PRESETS[Math.floor(Math.random() * CONTROL_POINT_PRESETS.length)];
+      newMesh.resizeControlPoints(chosenPreset.width, chosenPreset.height);
+      const uPower = 2 / (chosenPreset.width - 1);
+      const vPower = 2 / (chosenPreset.height - 1);
+      for (const cp of chosenPreset.conf) {
+        const p2 = newMesh.getControlPoint(cp.cx, cp.cy);
+        p2.location.x = cp.x;
+        p2.location.y = cp.y;
+        p2.uRot = cp.ur * Math.PI / 180;
+        p2.vRot = cp.vr * Math.PI / 180;
+        p2.uScale = uPower * cp.up;
+        p2.vScale = vPower * cp.vp;
+      }
+      newMesh.updateMesh();
+      return {
+        mesh: newMesh,
+        texture: new GLTexture(this.gl, imageData),
+        alpha: 0
+      };
+    }
+    onContextLost = (event) => {
+      event.preventDefault();
+      this.contextLost = true;
+      this.albumLoadController?.abort();
+      if (this.tickHandle) {
+        cancelAnimationFrame(this.tickHandle);
+        this.tickHandle = 0;
+      }
+    };
+    onContextRestored = () => {
+      if (this._disposed) return;
+      this.contextLost = false;
+      this.meshStates = [];
+      this.fbo = null;
+      this.fboTexture = null;
+      this.currentSize = Vec2.fromValues(0, 0);
+      this.initializeGLResources();
+      this.lastFrameTime = performance.now();
+      this.isNoCover = !this.lastImageData;
+      if (this.lastImageData) this.meshStates.push(this.createMeshState(this.lastImageData));
+      this.requestTick();
+    };
+    setManualControl(enable) {
+      this.manualControl = enable;
+    }
+    setWireFrame(enable) {
+      for (const state of this.meshStates) state.mesh.setWireFrame(enable);
+    }
+    getControlPoint(x, y) {
+      return this.meshStates[this.meshStates.length - 1]?.mesh?.getControlPoint(x, y);
+    }
+    resizeControlPoints(width, height) {
+      this.meshStates[this.meshStates.length - 1]?.mesh?.resizeControlPoints(width, height);
+    }
+    resetSubdivition(subDivisions) {
+      this.meshStates[this.meshStates.length - 1]?.mesh?.resetSubdivition(subDivisions);
+    }
+    onTick(tickTime) {
+      this.tickHandle = 0;
+      if (this.paused) return;
+      if (this._disposed) return;
+      if (this.contextLost) return;
+      this.updatePerformanceStats(tickTime);
+      const interval = 1e3 / this.maxFPS;
+      const delta = tickTime - this.lastTickTime;
+      if (delta < interval) {
+        this.requestTick();
+        return;
+      }
+      if (Number.isNaN(this.lastFrameTime)) this.lastFrameTime = tickTime;
+      const frameDelta = tickTime - this.lastFrameTime;
+      this.lastFrameTime = tickTime;
+      this.lastTickTime = tickTime - delta % interval;
+      this.frameTime += frameDelta * this.flowSpeed;
+      if (!(this.onRedraw(this.frameTime, frameDelta) && this.staticMode)) this.requestTick();
+      else if (this.staticMode) this.lastFrameTime = NaN;
+    }
+    checkIfResize() {
+      const [tW, tH] = [this.targetSize.x, this.targetSize.y];
+      const [cW, cH] = [this.currentSize.x, this.currentSize.y];
+      if (tW !== cW || tH !== cH) {
+        super.onResize(tW, tH);
+        const gl = this.gl;
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.viewport(0, 0, tW, tH);
+        this.currentSize.x = tW;
+        this.currentSize.y = tH;
+        if (tW > 0 && tH > 0) this.updateFBO(tW, tH);
+      }
+    }
+    updateFBO(width, height) {
+      const gl = this.gl;
+      if (this.fbo) gl.deleteFramebuffer(this.fbo);
+      if (this.fboTexture) gl.deleteTexture(this.fboTexture);
+      this.fboTexture = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, this.fboTexture);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      this.fbo = gl.createFramebuffer();
+      gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
+      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.fboTexture, 0);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    }
+    onRedraw(tickTime, delta) {
+      const latestMeshState = this.meshStates[this.meshStates.length - 1];
+      let canBeStatic = false;
+      const deltaFactor = delta / 500;
+      if (latestMeshState) {
+        latestMeshState.mesh.bind();
+        if (this.manualControl) latestMeshState.mesh.updateMesh();
+        if (this.isNoCover) {
+          let hasActiveStates = false;
+          for (let i = this.meshStates.length - 1; i >= 0; i--) {
+            const state = this.meshStates[i];
+            if (state.alpha <= -0.1) {
+              state.mesh.dispose();
+              state.texture.dispose();
+              this.meshStates.splice(i, 1);
+            } else {
+              state.alpha = Math.max(-0.1, state.alpha - deltaFactor);
+              hasActiveStates = true;
+            }
+          }
+          canBeStatic = !hasActiveStates;
+        } else {
+          if (latestMeshState.alpha >= 1.1) {
+            const deleted = this.meshStates.splice(0, this.meshStates.length - 1);
+            for (const state of deleted) {
+              state.mesh.dispose();
+              state.texture.dispose();
+            }
+          } else latestMeshState.alpha = Math.min(1.1, latestMeshState.alpha + deltaFactor);
+          canBeStatic = this.meshStates.length === 1 && latestMeshState.alpha >= 1.1;
+        }
+      }
+      const gl = this.gl;
+      this.checkIfResize();
+      if (!this.fbo) return canBeStatic;
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      gl.clearColor(0, 0, 0, 0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      const lerpFactor = Math.min(1, delta / 100);
+      this.smoothedVolume += (this.volume - this.smoothedVolume) * lerpFactor;
+      for (const state of this.meshStates) {
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
+        gl.disable(gl.BLEND);
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        this.mainProgram.use();
+        gl.activeTexture(gl.TEXTURE0);
+        const uTime = tickTime / 1e4;
+        this.mainProgram.setUniform1f("u_aspect", this.manualControl ? 1 : this.canvas.width / this.canvas.height);
+        this.mainProgram.setUniform1i("u_texture", 0);
+        this.mainProgram.setUniform1f("u_volume", this.volume);
+        this.mainProgram.setUniform1f("u_alpha", 1);
+        const angle = (uTime + this.volume) * 2;
+        this.mainProgram.setUniform1f("u_sinAngle", Math.sin(angle));
+        this.mainProgram.setUniform1f("u_cosAngle", Math.cos(angle));
+        state.texture.bind();
+        state.mesh.bind();
+        state.mesh.draw();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.enable(gl.BLEND);
+        gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+        this.quadProgram.use();
+        this.quadProgram.setUniform1i("u_texture", 0);
+        this.quadProgram.setUniform1f("u_alpha", easeInOutSine(clamp01(state.alpha)));
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, this.fboTexture);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.quadBuffer);
+        const a_pos = this.quadProgram.attrs.a_pos;
+        gl.vertexAttribPointer(a_pos, 2, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(a_pos);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+        gl.disableVertexAttribArray(a_pos);
+      }
+      gl.flush();
+      return canBeStatic;
+    }
+    onTickBinded = this.onTick.bind(this);
+    requestTick() {
+      if (this._disposed) return;
+      if (this.tickHandle === 0) this.tickHandle = requestAnimationFrame(this.onTickBinded);
+    }
+    constructor(canvas) {
+      super(canvas);
+      const gl = canvas.getContext("webgl", { antialias: true });
+      if (!gl) throw new Error("WebGL not supported");
+      this.gl = gl;
+      this.initializeGLResources();
+      canvas.addEventListener("webglcontextlost", this.onContextLost);
+      canvas.addEventListener("webglcontextrestored", this.onContextRestored);
+      this.requestTick();
+    }
+    onResize(width, height) {
+      this.targetSize.x = Math.ceil(width);
+      this.targetSize.y = Math.ceil(height);
+      this.requestTick();
+    }
+    setStaticMode(enable) {
+      this.staticMode = enable;
+      this.lastFrameTime = performance.now();
+      this.requestTick();
+    }
+    setFPS(fps) {
+      this.maxFPS = fps;
+    }
+    pause() {
+      if (this.tickHandle) {
+        cancelAnimationFrame(this.tickHandle);
+        this.tickHandle = 0;
+      }
+      this.paused = true;
+    }
+    resume() {
+      this.paused = false;
+      this.requestTick();
+    }
+    async setAlbum(albumSource, isVideo) {
+      const requestId = ++this.albumRequestId;
+      this.albumLoadController?.abort();
+      const loadController = new AbortController();
+      this.albumLoadController = loadController;
+      if (albumSource === void 0 || typeof albumSource === "string" && albumSource.trim().length === 0) {
+        this.isNoCover = true;
+        this.lastImageData = void 0;
+        return;
+      }
+      let res = null;
+      let blob = null;
+      let objectUrl;
+      let remainRetryTimes = 5;
+      while (!res && remainRetryTimes > 0) try {
+        if (typeof albumSource === "string") {
+          if (!isVideo && "createImageBitmap" in window) {
+            blob = await (await fetch(albumSource, { signal: loadController.signal })).blob();
+            if (!this.isCurrentAlbumRequest(requestId)) return;
+            objectUrl = URL.createObjectURL(blob);
+            res = await loadResourceFromUrl(objectUrl, false);
+          } else res = await loadResourceFromUrl(albumSource, isVideo);
+        } else res = await loadResourceFromElement(albumSource);
+        if (!this.isCurrentAlbumRequest(requestId)) {
+          if (objectUrl) URL.revokeObjectURL(objectUrl);
+          return;
+        }
+      } catch (error) {
+        if (objectUrl) {
+          URL.revokeObjectURL(objectUrl);
+          objectUrl = void 0;
+        }
+        if (!this.isCurrentAlbumRequest(requestId)) return;
+        console.warn(`failed on loading album resource, retrying (${remainRetryTimes})`, {
+          albumSource,
+          error
+        });
+        remainRetryTimes--;
+      }
+      if (!res) {
+        if (!this.isCurrentAlbumRequest(requestId)) return;
+        console.error("Failed to load album resource", albumSource);
+        return;
+      }
+      const c = this.reduceImageSizeCanvas;
+      const ctx = c.getContext("2d", { willReadFrequently: true });
+      if (!ctx) throw new Error("Failed to create canvas context");
+      ctx.clearRect(0, 0, c.width, c.height);
+      const imgw = res instanceof HTMLVideoElement ? res.videoWidth : res.naturalWidth;
+      const imgh = res instanceof HTMLVideoElement ? res.videoHeight : res.naturalHeight;
+      if (imgw * imgh === 0) throw new Error("Invalid image size");
+      let bitmap = null;
+      try {
+        if ("createImageBitmap" in window) {
+          if (blob) bitmap = await createImageBitmap(blob, {
+            resizeWidth: c.width,
+            resizeHeight: c.height,
+            resizeQuality: "low"
+          });
+          else bitmap = await createImageBitmap(res, {
+            resizeWidth: c.width,
+            resizeHeight: c.height,
+            resizeQuality: "low"
+          });
+        }
+      } catch (e) {
+        console.warn("createImageBitmap failed", e);
+      }
+      if (!this.isCurrentAlbumRequest(requestId)) {
+        bitmap?.close();
+        if (objectUrl) URL.revokeObjectURL(objectUrl);
+        return;
+      }
+      if (bitmap) {
+        ctx.drawImage(bitmap, 0, 0);
+        bitmap.close();
+      } else ctx.drawImage(res, 0, 0, imgw, imgh, 0, 0, c.width, c.height);
+      const imageData = ctx.getImageData(0, 0, c.width, c.height);
+      const pixels = imageData.data;
+      for (let i = 0; i < pixels.length; i += 4) {
+        let r = pixels[i];
+        let g = pixels[i + 1];
+        let b = pixels[i + 2];
+        r = (r - 128) * 0.4 + 128;
+        g = (g - 128) * 0.4 + 128;
+        b = (b - 128) * 0.4 + 128;
+        const gray = r * 0.3 + g * 0.59 + b * 0.11;
+        r = gray * -2 + r * 3;
+        g = gray * -2 + g * 3;
+        b = gray * -2 + b * 3;
+        r = (r - 128) * 1.7 + 128;
+        g = (g - 128) * 1.7 + 128;
+        b = (b - 128) * 1.7 + 128;
+        pixels[i] = r * 0.75;
+        pixels[i + 1] = g * 0.75;
+        pixels[i + 2] = b * 0.75;
+      }
+      blurImage(imageData, 2, 4);
+      if (this.manualControl && this.meshStates.length > 0) {
+        this.meshStates[0].texture.dispose();
+        this.meshStates[0].texture = new GLTexture(this.gl, imageData);
+      } else this.meshStates.push(this.createMeshState(imageData));
+      this.isNoCover = false;
+      this.lastImageData = imageData;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+      this.requestTick();
+    }
+    setLowFreqVolume(volume) {
+      this.volume = volume / 10;
+    }
+    setHasLyric(_hasLyric) {
+    }
+    dispose() {
+      super.dispose();
+      this.albumLoadController?.abort();
+      this.canvas.removeEventListener("webglcontextlost", this.onContextLost);
+      this.canvas.removeEventListener("webglcontextrestored", this.onContextRestored);
+      if (this.tickHandle) {
+        cancelAnimationFrame(this.tickHandle);
+        this.tickHandle = 0;
+      }
+      this._disposed = true;
+      this.mainProgram.dispose();
+      this.quadProgram.dispose();
+      this.gl.deleteBuffer(this.quadBuffer);
+      if (this.fbo) this.gl.deleteFramebuffer(this.fbo);
+      if (this.fboTexture) this.gl.deleteTexture(this.fboTexture);
+      for (const state of this.meshStates) {
+        state.mesh.dispose();
+        state.texture.dispose();
+      }
+    }
+    enablePerformanceMonitor(enable) {
+      this.enablePerformanceMonitoring = enable;
+      if (enable) {
+        this.frameCount = 0;
+        this.lastFPSUpdate = performance.now();
+      }
+    }
+    getCurrentFPS() {
+      return this.currentFPS;
+    }
+    updatePerformanceStats(tickTime) {
+      if (!this.enablePerformanceMonitoring) return;
+      this.frameCount++;
+      if (tickTime - this.lastFPSUpdate > 1e3) {
+        this.currentFPS = this.frameCount;
+        this.frameCount = 0;
+        this.lastFPSUpdate = tickTime;
+      }
+    }
+  };
+  var BackgroundRender = class BackgroundRender2 {
+    element;
+    renderer;
+    constructor(renderer, canvas) {
+      this.renderer = renderer;
+      this.element = canvas;
+      canvas.style.pointerEvents = "none";
+      canvas.style.zIndex = "-1";
+      canvas.style.contain = "strict";
+    }
+    /**
+    * 获取被包装的渲染器实例。
+    *
+    * 各个渲染器有自己特有的可调项（例如 {@link IsolationRenderer.setOptions}），
+    * 这些项没法通过统一的 `AbstractBaseRenderer` 接口下发，需要拿到实例本体。
+    */
+    getRenderer() {
+      return this.renderer;
+    }
+    static new(type) {
+      const newCanvas = document.createElement("canvas");
+      return new BackgroundRender2(new type(newCanvas), newCanvas);
+    }
+    setRenderScale(scale) {
+      this.renderer.setRenderScale(scale);
+    }
+    setFlowSpeed(speed) {
+      this.renderer.setFlowSpeed(speed);
+    }
+    setStaticMode(enable) {
+      this.renderer.setStaticMode(enable);
+    }
+    setFPS(fps) {
+      this.renderer.setFPS(fps);
+    }
+    pause() {
+      this.renderer.pause();
+    }
+    resume() {
+      this.renderer.resume();
+    }
+    setLowFreqVolume(volume) {
+      this.renderer.setLowFreqVolume(volume);
+    }
+    setHasLyric(hasLyric) {
+      this.renderer.setHasLyric(hasLyric);
+    }
+    setAlbum(albumSource, isVideo) {
+      return this.renderer.setAlbum(albumSource, isVideo);
+    }
+    getElement() {
+      return this.element;
+    }
+    dispose() {
+      this.renderer.dispose();
+      this.element.remove();
+    }
+  };
   var toD = (ms) => ms;
   var toM = (ms) => ms;
   var toNum = (t) => t;
@@ -7191,11 +12582,17 @@
     mediaAnim: true,
     /* background */
     bgEnabled: true,
-    bgType: "blur",
-    // 'blur' | 'solid'
+    bgType: "flow",
+    // 'flow' | 'blur' | 'solid'
+    bgFlowSpeed: 1,
+    bgRenderScale: 0.5,
+    bgFps: 30,
     bgBlur: 100,
     bgBrightness: 0.55,
     bgSaturate: 1.9,
+    /* low-spec preset: caps the background's resolution/frame rate and turns off
+       the heaviest lyric effects, for machines that cannot hold 60fps */
+    bgPerf: false,
     /* lyric player */
     lyricBlur: true,
     lyricScale: true,
@@ -7216,22 +12613,25 @@
       raw = {};
     }
     const s = Object.assign({}, DEFAULT_SETTINGS, raw);
-    if (raw.__v !== 2) {
-      s.showAlbum = DEFAULT_SETTINGS.showAlbum;
-      s.__v = 2;
-    }
+    if (raw.__v !== 2) s.showAlbum = DEFAULT_SETTINGS.showAlbum;
+    if (raw.__v !== 3) s.bgType = DEFAULT_SETTINGS.bgType;
+    s.__v = 3;
     if (["off", "blur"].indexOf(s.barStyle) < 0) s.barStyle = DEFAULT_SETTINGS.barStyle;
     if (["pingfang", "system"].indexOf(s.lyricFont) < 0) s.lyricFont = DEFAULT_SETTINGS.lyricFont;
-    if (["blur", "solid"].indexOf(s.bgType) < 0) s.bgType = DEFAULT_SETTINGS.bgType;
+    if (["flow", "blur", "solid"].indexOf(s.bgType) < 0) s.bgType = DEFAULT_SETTINGS.bgType;
     s.barOpacity = clamp2(Number(s.barOpacity), 0.05, 0.95);
     s.barBlur = clamp2(Number(s.barBlur), 0, 60);
     s.barCover = clamp2(Number(s.barCover), 0, 0.9);
     s.lyricFontScale = clamp2(Number(s.lyricFontScale), 0.6, 2);
     s.lyricWeight = clamp2(Math.round(Number(s.lyricWeight) / 100) * 100, 200, 900);
     s.wordBright = clamp2(Number(s.wordBright), 0.3, 1.4);
+    s.bgFlowSpeed = clamp2(Number(s.bgFlowSpeed), 0.1, 4);
+    s.bgRenderScale = clamp2(Number(s.bgRenderScale), 0.2, 1);
+    s.bgFps = clamp2(Math.round(Number(s.bgFps)), 0, 60);
     s.bgBlur = clamp2(Number(s.bgBlur), 0, 200);
     s.bgBrightness = clamp2(Number(s.bgBrightness), 0.15, 1.2);
     s.bgSaturate = clamp2(Number(s.bgSaturate), 0.5, 3);
+    s.bgPerf = !!s.bgPerf;
     s.wordFade = clamp2(Number(s.wordFade), 1e-4, 1.5);
     return s;
   }
@@ -7429,7 +12829,7 @@
     more: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5.2" cy="12" r="1.85"/><circle cx="12" cy="12" r="1.85"/><circle cx="18.8" cy="12" r="1.85"/></svg>',
     check: '<svg viewBox="0 0 13 14" fill="none" aria-hidden="true"><path d="M3 8l2.25 2.5L9.5 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
     chevron: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>',
-    close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" aria-hidden="true"><path d="M6.6 6.6 17.4 17.4"/><path d="M17.4 6.6 6.6 17.4"/></svg>'
+    close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4.2 4.2 19.8 19.8"/><path d="M19.8 4.2 4.2 19.8"/></svg>'
   };
   var OVERLAY_CSS = `
 #soda-amll-overlay{position:fixed;inset:0;z-index:2147483600;overflow:hidden;color:#fff;font-family:${SA_FONT_PINGFANG};font-size:clamp(13px,2.17vh,26px);background:#14140f;border-radius:16px 16px 0 0;transform:translateY(100%);transition:transform .55s cubic-bezier(.8,0,.1,1),border-radius .3s ease-in-out;will-change:transform}
@@ -7437,34 +12837,47 @@
 #soda-amll-overlay.sa-noanim{transition:none!important}
 html[data-sa-font="system"] #soda-amll-overlay,html[data-sa-font="system"] #soda-amll-menu,html[data-sa-font="system"] #soda-amll-win{font-family:${SA_FONT_SYSTEM}}
 
-.sa-bg{position:absolute;inset:-18%;background:radial-gradient(120% 90% at 30% 20%,#3a4030,#0e0e0c 70%);filter:blur(100px) saturate(1.9) brightness(.55);transform:scale(1.1);pointer-events:none;opacity:0;transition:opacity .8s ease,transform 1.6s cubic-bezier(.16,1,.3,1)}
+.sa-bg{position:absolute;inset:-18%;background:radial-gradient(120% 90% at 30% 20%,#3a4030,#0e0e0c 70%);transform:scale(1.1);pointer-events:none;opacity:0;transition:opacity .8s ease,transform 1.6s cubic-bezier(.16,1,.3,1)}
 #soda-amll-overlay.sa-open .sa-bg{opacity:1;transform:scale(1.22)}
 .sa-bg-layer{position:absolute;inset:0;background-size:cover;background-position:center;background-repeat:no-repeat;opacity:0;transition:opacity .9s cubic-bezier(.4,0,.2,1)}
 .sa-bg-layer.sa-on{opacity:1}
 .sa-bg.sa-solid .sa-bg-layer{display:none}
+.sa-bg.sa-mode-blur .sa-bg-layer{filter:blur(var(--sa-bg-blur,100px)) saturate(var(--sa-bg-sat,1.9)) brightness(var(--sa-bg-bright,.55))}
+/* fluid background: AMLL's mesh gradient renderer paints into this canvas and
+   keeps it alive on its own rAF loop, so it lives in its own layer. */
+.sa-flow{position:absolute;inset:0;z-index:0;pointer-events:none;display:none;opacity:0;transition:opacity .8s ease}
+.sa-flow.sa-on{display:block}
+#soda-amll-overlay.sa-open .sa-flow{opacity:1}
+.sa-flow canvas{position:absolute;inset:0;width:100%;height:100%;display:block;filter:saturate(var(--sa-bg-sat,1.9)) brightness(var(--sa-bg-bright,.55))}
 .sa-tint{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.28),rgba(0,0,0,.14) 40%,rgba(0,0,0,.4))}
 .sa-vignette{position:absolute;inset:0;pointer-events:none;background:radial-gradient(130% 110% at 25% 10%,rgba(255,255,255,.06),rgba(0,0,0,.5) 78%)}
 
-.sa-stage{position:absolute;inset:0;display:grid;grid-template-columns:0.72fr 1fr}
+.sa-stage{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr}
+/* no lyric data: the right column collapses and everything sits in the middle */
+#soda-amll-overlay.sa-nolyric .sa-stage{grid-template-columns:1fr}
+#soda-amll-overlay.sa-nolyric .sa-left{grid-column:1;width:100%}
+#soda-amll-overlay.sa-nolyric .sa-lyric{display:none}
 
 .sa-left{grid-column:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0;height:100%}
 
 /* the little bar is a close button: hovering morphs it into a rounded square
    with an X, and it trails the pointer on a spring until it snaps back. */
-.sa-close{position:relative;display:flex;align-items:center;justify-content:center;width:clamp(46px,6.4vh,72px);height:clamp(30px,4.4vh,50px);margin-bottom:3.4vh;padding:0;border:0;background:transparent;cursor:none;touch-action:none;transition:transform .22s cubic-bezier(.22,1.2,.36,1);will-change:transform}
-.sa-close .sa-chip{position:relative;display:flex;align-items:center;justify-content:center;width:clamp(40px,5.6vh,64px);height:clamp(4px,.65vh,8px);border-radius:100px;background:rgba(255,255,255,.32);transition:width .36s cubic-bezier(.34,1.4,.5,1),height .36s cubic-bezier(.34,1.4,.5,1),border-radius .36s cubic-bezier(.34,1.4,.5,1),background-color .3s ease}
-.sa-close.sa-expand .sa-chip{width:clamp(26px,3.7vh,42px);height:clamp(26px,3.7vh,42px);border-radius:clamp(7px,1vh,12px);background:rgba(255,255,255,.18)}
-.sa-close .sa-x{position:absolute;width:56%;height:56%;opacity:0;transform:scale(.4) rotate(-60deg);transition:opacity .22s ease,transform .36s cubic-bezier(.34,1.4,.5,1);pointer-events:none}
+.sa-close{position:relative;display:flex;align-items:center;justify-content:center;width:clamp(38px,5.4vh,60px);height:clamp(24px,3.6vh,40px);margin-bottom:2.6vh;padding:0;border:0;background:transparent;cursor:none;touch-action:none;transition:transform .22s cubic-bezier(.22,1.2,.36,1);will-change:transform}
+.sa-close .sa-chip{position:relative;display:flex;align-items:center;justify-content:center;width:clamp(40px,5.6vh,64px);height:clamp(7px,1.05vh,12px);border-radius:100px;background:rgba(255,255,255,.32);transition:width .36s cubic-bezier(.34,1.4,.5,1),height .36s cubic-bezier(.34,1.4,.5,1),border-radius .36s cubic-bezier(.34,1.4,.5,1),background-color .3s ease}
+.sa-close.sa-expand .sa-chip{width:clamp(16px,2.2vh,26px);height:clamp(16px,2.2vh,26px);border-radius:clamp(4px,.6vh,7px);background:rgba(255,255,255,.2)}
+/* the host app styles bare <button> globally, which would otherwise repaint the
+   X, so the glyph colour is pinned here. */
+.sa-close .sa-x{position:absolute;width:62%;height:62%;color:#0d0d0d;opacity:0;transform:scale(.4) rotate(-60deg);transition:opacity .22s ease,transform .36s cubic-bezier(.34,1.4,.5,1);pointer-events:none}
 .sa-close .sa-x svg{display:block;width:100%;height:100%}
-.sa-close.sa-expand .sa-x{opacity:.92;transform:none}
+.sa-close.sa-expand .sa-x{opacity:.95;transform:none}
 
-.sa-cover-wrap{position:relative;width:min(41vh,29vw);height:min(41vh,29vw);border-radius:3%;box-shadow:0 16px 24px rgba(0,0,0,.25),0 32px 64px rgba(0,0,0,.2);transition:box-shadow .5s ease,transform .6s cubic-bezier(.4,.2,.1,1)}
+.sa-cover-wrap{position:relative;width:min(52vh,37vw);height:min(52vh,37vw);border-radius:3%;box-shadow:0 16px 24px rgba(0,0,0,.25),0 32px 64px rgba(0,0,0,.2);transform:scale(.84);transition:box-shadow .5s ease,transform .72s cubic-bezier(.34,1.56,.64,1)}
 .sa-cover-wrap.sa-playing{transform:scale(1.03)}
 .sa-cover-wrap.sa-nocursor{cursor:none}
 .sa-cover{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:3%;background:rgba(255,255,255,.06);-webkit-user-drag:none}
 .sa-cover-ghost{z-index:2;opacity:0;pointer-events:none}
 
-.sa-info{width:min(51vh,37vw);max-width:100%;min-width:0;display:flex;flex-direction:column;margin-top:6vh}
+.sa-info{width:min(52vh,37vw);max-width:100%;min-width:0;display:flex;flex-direction:column;margin-top:4.4vh}
 
 .sa-meta{display:flex;align-items:center;gap:14px}
 .sa-meta-text{min-width:0;flex:1}
@@ -7522,7 +12935,7 @@ html[data-sa-font="system"] #soda-amll-overlay,html[data-sa-font="system"] #soda
 /* AMLL only exposes the sung-region highlight opacity through a class rule, so
    the brightness control has to out-specify .FmKaba_lyricLine.FmKaba_gradientMask. */
 .sa-lyric .amll-lyric-player .FmKaba_lyricLine.FmKaba_gradientMask{--bright-mask-alpha:var(--sa-word-bright,1)!important}
-.sa-empty{position:absolute;inset:0;z-index:3;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.4);font-size:1.1em;pointer-events:none}
+.sa-empty{display:none;margin-top:3vh;color:rgba(255,255,255,.4);font-size:1.05em;line-height:1.5;text-align:center;max-width:80%;pointer-events:none}
 
 #soda-amll-fab{position:fixed;right:22px;bottom:104px;z-index:2147483500;appearance:none;border:0;height:34px;padding:0 14px;border-radius:17px;cursor:pointer;background:rgba(24,24,28,.86);color:#fff;font-size:12.5px;font-family:${SA_FONT_PINGFANG};letter-spacing:.04em;box-shadow:0 6px 18px rgba(0,0,0,.4);display:flex;align-items:center;gap:7px;backdrop-filter:blur(8px);transition:transform .15s,background .15s}
 #soda-amll-fab:hover{background:rgba(48,48,56,.94);transform:translateY(-1px)}
@@ -7762,6 +13175,7 @@ html[data-sa-bar="blur"] .bottom-player::before{
       root.id = "soda-amll-overlay";
       root.innerHTML = `
       <div class="sa-bg"><div class="sa-bg-layer sa-bg-l0"></div><div class="sa-bg-layer sa-bg-l1"></div></div>
+      <div class="sa-flow"></div>
       <div class="sa-tint"></div>
       <div class="sa-vignette"></div>
       <div class="sa-stage">
@@ -7797,8 +13211,9 @@ html[data-sa-bar="blur"] .bottom-player::before{
               <span class="sa-vicon sa-plain" title="\u97F3\u91CF">${ICON.volHigh}</span>
             </div>
           </div>
+          <div class="sa-empty">\u7B49\u5F85\u64AD\u653E\u4FE1\u606F\u2026</div>
         </div>
-        <div class="sa-lyric"><div class="sa-empty">\u7B49\u5F85\u64AD\u653E\u4FE1\u606F\u2026</div></div>
+        <div class="sa-lyric"></div>
       </div>
       <div class="sa-fps">-- FPS</div>`;
       document.body.appendChild(root);
@@ -8244,18 +13659,130 @@ html[data-sa-bar="blur"] .bottom-player::before{
       const albumEl = this.root.querySelector(".sa-album");
       albumEl.textContent = this.settings.showAlbum ? pl.album && pl.album.name || "" : "";
       albumEl.style.display = this.settings.showAlbum && pl.album ? "" : "none";
+      const hasLyric = !!(md.lyrics && md.lyrics.content);
       if (this.emptyEl) {
-        const hasLyric = !!(md.lyrics && md.lyrics.content);
-        this.emptyEl.textContent = pl.name ? "\u8BE5\u6B4C\u66F2\u6682\u65E0\u6B4C\u8BCD" : "\u7B49\u5F85\u64AD\u653E\u4FE1\u606F\u2026";
-        this.emptyEl.style.display = pl.name && hasLyric ? "none" : "flex";
+        this.emptyEl.textContent = "\u7B49\u5F85\u64AD\u653E\u4FE1\u606F\u2026";
+        this.emptyEl.style.display = pl.name ? "none" : "block";
       }
+      this.root.classList.toggle("sa-nolyric", !hasLyric);
     }
     paintTheme() {
       if (!this.root) return;
+      const s = this.settings;
       const bg = this.root.querySelector(".sa-bg");
       if (!bg) return;
-      bg.classList.toggle("sa-solid", this.settings.bgType === "solid");
+      const flowHost = this.root.querySelector(".sa-flow");
+      let mode = s.bgEnabled ? s.bgType : "solid";
+      if (mode === "flow" && !this.ensureFlowBg()) mode = "blur";
+      if (mode === "flow") {
+        if (flowHost) flowHost.classList.add("sa-on");
+        this.applyFlowSettings();
+        this.setFlowAlbum(this.cover);
+        if (this.open) this.flowBg.resume();
+      } else {
+        if (flowHost) flowHost.classList.remove("sa-on");
+        if (this.flowBg) this.flowBg.pause();
+      }
+      bg.classList.toggle("sa-mode-flow", mode === "flow");
+      bg.classList.toggle("sa-mode-blur", mode === "blur");
+      bg.classList.toggle("sa-solid", mode === "solid");
       this.setBg(this.cover);
+    }
+    /* ---- fluid background (AMLL IsolationRenderer) ----
+       Isolation is the WebGL port of Cirrus' IsolationEffect: four palette
+       colours blended by a noise-driven gradient. The older MeshGradientRenderer
+       lays a Bezier patch mesh over the artwork, whose patch seams show up as a
+       stray bright S-shaped band, so it is only kept as a fallback. */
+    ensureFlowBg() {
+      if (this.flowBg) return this.flowBg;
+      if (this.flowBgFailed || !this.root) return null;
+      const host = this.root.querySelector(".sa-flow");
+      if (!host) return null;
+      try {
+        let render = null;
+        if (IsolationRenderer.isSupported()) {
+          render = BackgroundRender.new(IsolationRenderer);
+          try {
+            render.getRenderer().setOptions({
+              lightWave: false,
+              dithering: !this.settings.bgPerf
+            });
+          } catch (e) {
+          }
+        } else if (MeshGradientRenderer.isSupported()) {
+          render = BackgroundRender.new(MeshGradientRenderer);
+        }
+        if (!render) throw new Error("WebGL unavailable");
+        const el = render.getElement();
+        el.style.zIndex = "";
+        el.style.contain = "";
+        el.style.pointerEvents = "";
+        host.appendChild(el);
+        this.flowBg = render;
+        if (!this.open) render.pause();
+        LOG("flow background ready");
+      } catch (e) {
+        this.flowBgFailed = true;
+        LOG("flow background unavailable", e && e.message);
+      }
+      return this.flowBg || null;
+    }
+    applyFlowSettings() {
+      const render = this.flowBg;
+      if (!render) return;
+      const s = this.settings;
+      const perf = !!s.bgPerf;
+      const scale = clamp2(Number(s.bgRenderScale) || 0.5, 0.2, 1);
+      const fps = clamp2(Math.round(Number(s.bgFps)) || 0, 0, 60);
+      render.setRenderScale(perf ? Math.min(scale, 0.35) : scale);
+      render.setFlowSpeed(clamp2(Number(s.bgFlowSpeed) || 1, 0.1, 4));
+      const base = fps > 0 ? fps : 30;
+      const effFps = perf ? Math.min(base, 24) : base;
+      render.setFPS(effFps);
+      render.setStaticMode(fps <= 0);
+      try {
+        const inner = render.getRenderer();
+        if (inner && typeof inner.setOptions === "function") {
+          inner.setOptions({ lightWave: false, dithering: !perf });
+        }
+      } catch (e) {
+      }
+    }
+    /* MeshGradientRenderer wants a CORS-clean image for its WebGL texture, so the
+       cover is re-fetched with crossOrigin rather than reusing the display <img>. */
+    setFlowAlbum(url) {
+      const render = this.flowBg;
+      if (!render) return;
+      const u = url || "";
+      if (this.flowAlbumUrl === u) return;
+      this.flowAlbumUrl = u;
+      if (!u) {
+        render.setAlbum("");
+        return;
+      }
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        if (this.flowBg === render) {
+          this.flowAlbumErrors = 0;
+          render.setAlbum(img);
+        }
+      };
+      img.onerror = () => {
+        if (this.flowBg !== render) return;
+        this.flowAlbumErrors = (this.flowAlbumErrors || 0) + 1;
+        LOG("flow background: cover not readable, attempt", this.flowAlbumErrors);
+        if (this.flowAlbumErrors < 3) return;
+        this.flowBgFailed = true;
+        this.flowBg = null;
+        this.flowAlbumUrl = null;
+        try {
+          render.dispose();
+        } catch (e) {
+        }
+        this.paintTheme();
+      };
+      img.src = u;
     }
     tick() {
       if (!this.open) return;
@@ -8334,6 +13861,7 @@ html[data-sa-bar="blur"] .bottom-player::before{
       }
       this.visible = false;
       if (this.player) this.player.pause();
+      if (this.flowBg) this.flowBg.pause();
     }
     toggle() {
       if (this.open) this.hide();
@@ -8658,8 +14186,12 @@ html[data-sa-bar="blur"] .bottom-player::before{
         { page: "song", group: "main", type: "switch", key: "coverHideCursor", label: "\u5C01\u9762\u60AC\u505C\u9690\u85CF\u9F20\u6807", hint: "\u9F20\u6807\u79FB\u5230\u4E13\u8F91\u5C01\u9762\u4E0A\u65F6\u9690\u85CF\u6307\u9488" },
         /* 背景 */
         { page: "bg", group: "type", type: "switch", key: "bgEnabled", label: "\u663E\u793A\u6B4C\u8BCD\u80CC\u666F", hint: "\u4F7F\u7528\u5F53\u524D\u4E13\u8F91\u5C01\u9762\u4F5C\u4E3A\u80CC\u666F" },
-        { page: "bg", group: "type", type: "select", key: "bgType", label: "\u80CC\u666F\u7C7B\u578B", hint: "\u6A21\u7CCA\u5C01\u9762 / \u6DF1\u8272\u6E10\u53D8", options: [["blur", "\u6A21\u7CCA\u5C01\u9762"], ["solid", "\u6DF1\u8272\u6E10\u53D8"]] },
-        { page: "bg", group: "tune", type: "range", key: "bgBlur", label: "\u80CC\u666F\u6A21\u7CCA", hint: "\u6570\u503C\u8D8A\u9AD8\u8D8A\u67D4\u548C\uFF0C\u6027\u80FD\u6D88\u8017\u8D8A\u5927", min: 0, max: 200, step: 2, fmt: (v) => `${Math.round(v)}px` },
+        { page: "bg", group: "type", type: "select", key: "bgType", label: "\u80CC\u666F\u7C7B\u578B", hint: "\u6D41\u4F53\u53D6\u8272 / \u6A21\u7CCA\u5C01\u9762 / \u6DF1\u8272\u6E10\u53D8", options: [["flow", "\u6D41\u4F53\u80CC\u666F"], ["blur", "\u6A21\u7CCA\u5C01\u9762"], ["solid", "\u6DF1\u8272\u6E10\u53D8"]] },
+        { page: "bg", group: "flow", type: "range", key: "bgFlowSpeed", label: "\u6D41\u4F53\u901F\u5EA6", hint: "\u989C\u8272\u6D41\u52A8\u7684\u5FEB\u6162\uFF0C\u9ED8\u8BA4 1.00", min: 0.1, max: 4, step: 0.05, fmt: (v) => v.toFixed(2) },
+        { page: "bg", group: "flow", type: "range", key: "bgRenderScale", label: "\u6E32\u67D3\u7CBE\u5EA6", hint: "\u6D41\u4F53\u80CC\u666F\u7684\u6E32\u67D3\u6BD4\u4F8B\uFF0C\u8D8A\u4F4E\u8D8A\u7701\u6027\u80FD", min: 0.2, max: 1, step: 0.05, fmt: (v) => `${Math.round(v * 100)}%` },
+        { page: "bg", group: "flow", type: "range", key: "bgFps", label: "\u6E32\u67D3\u5E27\u7387", hint: "\u6D41\u4F53\u80CC\u666F\u52A8\u753B\u5E27\u7387\uFF0C0 \u4E3A\u9759\u6B62", min: 0, max: 60, step: 1, fmt: (v) => v ? `${Math.round(v)} FPS` : "\u9759\u6B62" },
+        { page: "bg", group: "flow", type: "switch", key: "bgPerf", label: "\u6027\u80FD\u6A21\u5F0F", hint: "\u964D\u4F4E\u80CC\u666F\u5206\u8FA8\u7387\u4E0E\u5E27\u7387\uFF0C\u5E76\u5173\u95ED\u6B4C\u8BCD\u6A21\u7CCA\u548C\u7F29\u653E\uFF0C\u8001\u673A\u578B\u66F4\u6D41\u7545" },
+        { page: "bg", group: "tune", type: "range", key: "bgBlur", label: "\u80CC\u666F\u6A21\u7CCA", hint: "\u6A21\u7CCA\u5C01\u9762\u6A21\u5F0F\u4E0B\u7684\u67D4\u548C\u7A0B\u5EA6", min: 0, max: 200, step: 2, fmt: (v) => `${Math.round(v)}px` },
         { page: "bg", group: "tune", type: "range", key: "bgBrightness", label: "\u80CC\u666F\u4EAE\u5EA6", hint: "\u9ED8\u8BA4 0.55", min: 0.15, max: 1.2, step: 0.01, fmt: (v) => v.toFixed(2) },
         { page: "bg", group: "tune", type: "range", key: "bgSaturate", label: "\u80CC\u666F\u9971\u548C\u5EA6", hint: "\u9ED8\u8BA4 1.90", min: 0.5, max: 3, step: 0.05, fmt: (v) => v.toFixed(2) },
         /* 歌词源 */
@@ -8922,26 +14454,48 @@ html[data-sa-bar="blur"] .bottom-player::before{
       html.style.setProperty("--sa-bar-cover-a", String(s.barCover));
       html.style.setProperty("--sa-lyric-weight", String(s.lyricWeight));
       html.style.setProperty("--sa-word-bright", String(s.wordBright));
+      html.style.setProperty("--sa-bg-blur", `${Math.round(s.bgBlur)}px`);
+      html.style.setProperty("--sa-bg-sat", s.bgSaturate.toFixed(2));
+      html.style.setProperty("--sa-bg-bright", s.bgBrightness.toFixed(2));
       if (this.root) {
         this.root.classList.toggle("sa-noanim", !s.lyricTransition);
         this.root.classList.toggle("sa-fps-on", !!s.showFps);
         const cover = this.root.querySelector(".sa-cover-wrap");
         if (cover) cover.classList.toggle("sa-nocursor", !!s.coverHideCursor);
         const bg = this.root.querySelector(".sa-bg");
-        if (bg) {
-          bg.style.display = s.bgEnabled ? "" : "none";
-          bg.style.filter = `blur(${Math.round(s.bgBlur)}px) saturate(${s.bgSaturate.toFixed(2)}) brightness(${s.bgBrightness.toFixed(2)})`;
-        }
+        if (bg) bg.style.display = s.bgEnabled ? "" : "none";
+        const flow = this.root.querySelector(".sa-flow");
+        if (flow) flow.style.display = s.bgEnabled ? "" : "none";
         const tint = this.root.querySelector(".sa-tint");
         if (tint) tint.style.display = s.bgEnabled ? "" : "none";
         const vig = this.root.querySelector(".sa-vignette");
         if (vig) vig.style.display = s.bgEnabled ? "" : "none";
       }
       if (this.player) {
-        this.player.setEnableBlur(s.lyricBlur);
-        this.player.setEnableScale(s.lyricScale);
-        this.player.setWordFadeWidth(s.wordFade);
-        this.player.setHidePassedLines(s.hidePassed);
+        const perf = !!s.bgPerf;
+        const want = {
+          blur: perf ? false : !!s.lyricBlur,
+          scale: perf ? false : !!s.lyricScale,
+          wordFade: s.wordFade,
+          hidePassed: !!s.hidePassed
+        };
+        const cur = this.__playerOpts || (this.__playerOpts = {});
+        if (cur.blur !== want.blur) {
+          cur.blur = want.blur;
+          this.player.setEnableBlur(want.blur);
+        }
+        if (cur.scale !== want.scale) {
+          cur.scale = want.scale;
+          this.player.setEnableScale(want.scale);
+        }
+        if (cur.wordFade !== want.wordFade) {
+          cur.wordFade = want.wordFade;
+          this.player.setWordFadeWidth(want.wordFade);
+        }
+        if (cur.hidePassed !== want.hidePassed) {
+          cur.hidePassed = want.hidePassed;
+          this.player.setHidePassedLines(want.hidePassed);
+        }
       }
       this.applyFontScale();
       this.applyBarCover();

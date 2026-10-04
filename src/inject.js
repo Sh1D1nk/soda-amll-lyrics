@@ -1,4 +1,4 @@
-import { LyricPlayer, LayoutAlignAnchor } from '@applemusic-like-lyrics/core';
+import { LyricPlayer, LayoutAlignAnchor, BackgroundRender, IsolationRenderer, MeshGradientRenderer } from '@applemusic-like-lyrics/core';
 import amllCssText from '@applemusic-like-lyrics/core/style.css';
 
 const GLOBAL_KEY = '__SODA_AMLL__';
@@ -35,10 +35,16 @@ const DEFAULT_SETTINGS = {
 
   /* background */
   bgEnabled: true,
-  bgType: 'blur', // 'blur' | 'solid'
+  bgType: 'flow', // 'flow' | 'blur' | 'solid'
+  bgFlowSpeed: 1,
+  bgRenderScale: 0.5,
+  bgFps: 30,
   bgBlur: 100,
   bgBrightness: 0.55,
   bgSaturate: 1.9,
+  /* low-spec preset: caps the background's resolution/frame rate and turns off
+     the heaviest lyric effects, for machines that cannot hold 60fps */
+  bgPerf: false,
 
   /* lyric player */
   lyricBlur: true,
@@ -64,22 +70,26 @@ function loadSettings() {
   }
   const s = Object.assign({}, DEFAULT_SETTINGS, raw);
   /* v1 briefly defaulted the album line on; the reference layout has none. */
-  if (raw.__v !== 2) {
-    s.showAlbum = DEFAULT_SETTINGS.showAlbum;
-    s.__v = 2;
-  }
+  if (raw.__v !== 2) s.showAlbum = DEFAULT_SETTINGS.showAlbum;
+  /* v3 introduces the mesh-gradient (fluid) background as the default skin. */
+  if (raw.__v !== 3) s.bgType = DEFAULT_SETTINGS.bgType;
+  s.__v = 3;
   if (['off', 'blur'].indexOf(s.barStyle) < 0) s.barStyle = DEFAULT_SETTINGS.barStyle;
   if (['pingfang', 'system'].indexOf(s.lyricFont) < 0) s.lyricFont = DEFAULT_SETTINGS.lyricFont;
-  if (['blur', 'solid'].indexOf(s.bgType) < 0) s.bgType = DEFAULT_SETTINGS.bgType;
+  if (['flow', 'blur', 'solid'].indexOf(s.bgType) < 0) s.bgType = DEFAULT_SETTINGS.bgType;
   s.barOpacity = clamp(Number(s.barOpacity), 0.05, 0.95);
   s.barBlur = clamp(Number(s.barBlur), 0, 60);
   s.barCover = clamp(Number(s.barCover), 0, 0.9);
   s.lyricFontScale = clamp(Number(s.lyricFontScale), 0.6, 2);
   s.lyricWeight = clamp(Math.round(Number(s.lyricWeight) / 100) * 100, 200, 900);
   s.wordBright = clamp(Number(s.wordBright), 0.3, 1.4);
+  s.bgFlowSpeed = clamp(Number(s.bgFlowSpeed), 0.1, 4);
+  s.bgRenderScale = clamp(Number(s.bgRenderScale), 0.2, 1);
+  s.bgFps = clamp(Math.round(Number(s.bgFps)), 0, 60);
   s.bgBlur = clamp(Number(s.bgBlur), 0, 200);
   s.bgBrightness = clamp(Number(s.bgBrightness), 0.15, 1.2);
   s.bgSaturate = clamp(Number(s.bgSaturate), 0.5, 3);
+  s.bgPerf = !!s.bgPerf;
   s.wordFade = clamp(Number(s.wordFade), 0.0001, 1.5);
   return s;
 }
@@ -314,7 +324,7 @@ const ICON = {
     '<svg viewBox="0 0 13 14" fill="none" aria-hidden="true"><path d="M3 8l2.25 2.5L9.5 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   chevron: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>',
   close:
-    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" aria-hidden="true"><path d="M6.6 6.6 17.4 17.4"/><path d="M17.4 6.6 6.6 17.4"/></svg>',
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4.2 4.2 19.8 19.8"/><path d="M19.8 4.2 4.2 19.8"/></svg>',
 };
 
 /* NetEase's "类苹果歌词" page: a bottom sheet holding a two column stage.
@@ -326,34 +336,47 @@ const OVERLAY_CSS = `
 #soda-amll-overlay.sa-noanim{transition:none!important}
 html[data-sa-font="system"] #soda-amll-overlay,html[data-sa-font="system"] #soda-amll-menu,html[data-sa-font="system"] #soda-amll-win{font-family:${SA_FONT_SYSTEM}}
 
-.sa-bg{position:absolute;inset:-18%;background:radial-gradient(120% 90% at 30% 20%,#3a4030,#0e0e0c 70%);filter:blur(100px) saturate(1.9) brightness(.55);transform:scale(1.1);pointer-events:none;opacity:0;transition:opacity .8s ease,transform 1.6s cubic-bezier(.16,1,.3,1)}
+.sa-bg{position:absolute;inset:-18%;background:radial-gradient(120% 90% at 30% 20%,#3a4030,#0e0e0c 70%);transform:scale(1.1);pointer-events:none;opacity:0;transition:opacity .8s ease,transform 1.6s cubic-bezier(.16,1,.3,1)}
 #soda-amll-overlay.sa-open .sa-bg{opacity:1;transform:scale(1.22)}
 .sa-bg-layer{position:absolute;inset:0;background-size:cover;background-position:center;background-repeat:no-repeat;opacity:0;transition:opacity .9s cubic-bezier(.4,0,.2,1)}
 .sa-bg-layer.sa-on{opacity:1}
 .sa-bg.sa-solid .sa-bg-layer{display:none}
+.sa-bg.sa-mode-blur .sa-bg-layer{filter:blur(var(--sa-bg-blur,100px)) saturate(var(--sa-bg-sat,1.9)) brightness(var(--sa-bg-bright,.55))}
+/* fluid background: AMLL's mesh gradient renderer paints into this canvas and
+   keeps it alive on its own rAF loop, so it lives in its own layer. */
+.sa-flow{position:absolute;inset:0;z-index:0;pointer-events:none;display:none;opacity:0;transition:opacity .8s ease}
+.sa-flow.sa-on{display:block}
+#soda-amll-overlay.sa-open .sa-flow{opacity:1}
+.sa-flow canvas{position:absolute;inset:0;width:100%;height:100%;display:block;filter:saturate(var(--sa-bg-sat,1.9)) brightness(var(--sa-bg-bright,.55))}
 .sa-tint{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.28),rgba(0,0,0,.14) 40%,rgba(0,0,0,.4))}
 .sa-vignette{position:absolute;inset:0;pointer-events:none;background:radial-gradient(130% 110% at 25% 10%,rgba(255,255,255,.06),rgba(0,0,0,.5) 78%)}
 
-.sa-stage{position:absolute;inset:0;display:grid;grid-template-columns:0.72fr 1fr}
+.sa-stage{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr}
+/* no lyric data: the right column collapses and everything sits in the middle */
+#soda-amll-overlay.sa-nolyric .sa-stage{grid-template-columns:1fr}
+#soda-amll-overlay.sa-nolyric .sa-left{grid-column:1;width:100%}
+#soda-amll-overlay.sa-nolyric .sa-lyric{display:none}
 
 .sa-left{grid-column:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0;height:100%}
 
 /* the little bar is a close button: hovering morphs it into a rounded square
    with an X, and it trails the pointer on a spring until it snaps back. */
-.sa-close{position:relative;display:flex;align-items:center;justify-content:center;width:clamp(46px,6.4vh,72px);height:clamp(30px,4.4vh,50px);margin-bottom:3.4vh;padding:0;border:0;background:transparent;cursor:none;touch-action:none;transition:transform .22s cubic-bezier(.22,1.2,.36,1);will-change:transform}
-.sa-close .sa-chip{position:relative;display:flex;align-items:center;justify-content:center;width:clamp(40px,5.6vh,64px);height:clamp(4px,.65vh,8px);border-radius:100px;background:rgba(255,255,255,.32);transition:width .36s cubic-bezier(.34,1.4,.5,1),height .36s cubic-bezier(.34,1.4,.5,1),border-radius .36s cubic-bezier(.34,1.4,.5,1),background-color .3s ease}
-.sa-close.sa-expand .sa-chip{width:clamp(26px,3.7vh,42px);height:clamp(26px,3.7vh,42px);border-radius:clamp(7px,1vh,12px);background:rgba(255,255,255,.18)}
-.sa-close .sa-x{position:absolute;width:56%;height:56%;opacity:0;transform:scale(.4) rotate(-60deg);transition:opacity .22s ease,transform .36s cubic-bezier(.34,1.4,.5,1);pointer-events:none}
+.sa-close{position:relative;display:flex;align-items:center;justify-content:center;width:clamp(38px,5.4vh,60px);height:clamp(24px,3.6vh,40px);margin-bottom:2.6vh;padding:0;border:0;background:transparent;cursor:none;touch-action:none;transition:transform .22s cubic-bezier(.22,1.2,.36,1);will-change:transform}
+.sa-close .sa-chip{position:relative;display:flex;align-items:center;justify-content:center;width:clamp(40px,5.6vh,64px);height:clamp(7px,1.05vh,12px);border-radius:100px;background:rgba(255,255,255,.32);transition:width .36s cubic-bezier(.34,1.4,.5,1),height .36s cubic-bezier(.34,1.4,.5,1),border-radius .36s cubic-bezier(.34,1.4,.5,1),background-color .3s ease}
+.sa-close.sa-expand .sa-chip{width:clamp(16px,2.2vh,26px);height:clamp(16px,2.2vh,26px);border-radius:clamp(4px,.6vh,7px);background:rgba(255,255,255,.2)}
+/* the host app styles bare <button> globally, which would otherwise repaint the
+   X, so the glyph colour is pinned here. */
+.sa-close .sa-x{position:absolute;width:62%;height:62%;color:#0d0d0d;opacity:0;transform:scale(.4) rotate(-60deg);transition:opacity .22s ease,transform .36s cubic-bezier(.34,1.4,.5,1);pointer-events:none}
 .sa-close .sa-x svg{display:block;width:100%;height:100%}
-.sa-close.sa-expand .sa-x{opacity:.92;transform:none}
+.sa-close.sa-expand .sa-x{opacity:.95;transform:none}
 
-.sa-cover-wrap{position:relative;width:min(41vh,29vw);height:min(41vh,29vw);border-radius:3%;box-shadow:0 16px 24px rgba(0,0,0,.25),0 32px 64px rgba(0,0,0,.2);transition:box-shadow .5s ease,transform .6s cubic-bezier(.4,.2,.1,1)}
+.sa-cover-wrap{position:relative;width:min(52vh,37vw);height:min(52vh,37vw);border-radius:3%;box-shadow:0 16px 24px rgba(0,0,0,.25),0 32px 64px rgba(0,0,0,.2);transform:scale(.84);transition:box-shadow .5s ease,transform .72s cubic-bezier(.34,1.56,.64,1)}
 .sa-cover-wrap.sa-playing{transform:scale(1.03)}
 .sa-cover-wrap.sa-nocursor{cursor:none}
 .sa-cover{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:3%;background:rgba(255,255,255,.06);-webkit-user-drag:none}
 .sa-cover-ghost{z-index:2;opacity:0;pointer-events:none}
 
-.sa-info{width:min(51vh,37vw);max-width:100%;min-width:0;display:flex;flex-direction:column;margin-top:6vh}
+.sa-info{width:min(52vh,37vw);max-width:100%;min-width:0;display:flex;flex-direction:column;margin-top:4.4vh}
 
 .sa-meta{display:flex;align-items:center;gap:14px}
 .sa-meta-text{min-width:0;flex:1}
@@ -411,7 +434,7 @@ html[data-sa-font="system"] #soda-amll-overlay,html[data-sa-font="system"] #soda
 /* AMLL only exposes the sung-region highlight opacity through a class rule, so
    the brightness control has to out-specify .FmKaba_lyricLine.FmKaba_gradientMask. */
 .sa-lyric .amll-lyric-player .FmKaba_lyricLine.FmKaba_gradientMask{--bright-mask-alpha:var(--sa-word-bright,1)!important}
-.sa-empty{position:absolute;inset:0;z-index:3;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.4);font-size:1.1em;pointer-events:none}
+.sa-empty{display:none;margin-top:3vh;color:rgba(255,255,255,.4);font-size:1.05em;line-height:1.5;text-align:center;max-width:80%;pointer-events:none}
 
 #soda-amll-fab{position:fixed;right:22px;bottom:104px;z-index:2147483500;appearance:none;border:0;height:34px;padding:0 14px;border-radius:17px;cursor:pointer;background:rgba(24,24,28,.86);color:#fff;font-size:12.5px;font-family:${SA_FONT_PINGFANG};letter-spacing:.04em;box-shadow:0 6px 18px rgba(0,0,0,.4);display:flex;align-items:center;gap:7px;backdrop-filter:blur(8px);transition:transform .15s,background .15s}
 #soda-amll-fab:hover{background:rgba(48,48,56,.94);transform:translateY(-1px)}
@@ -674,6 +697,7 @@ class SodaAmll {
     root.id = 'soda-amll-overlay';
     root.innerHTML = `
       <div class="sa-bg"><div class="sa-bg-layer sa-bg-l0"></div><div class="sa-bg-layer sa-bg-l1"></div></div>
+      <div class="sa-flow"></div>
       <div class="sa-tint"></div>
       <div class="sa-vignette"></div>
       <div class="sa-stage">
@@ -709,8 +733,9 @@ class SodaAmll {
               <span class="sa-vicon sa-plain" title="音量">${ICON.volHigh}</span>
             </div>
           </div>
+          <div class="sa-empty">等待播放信息…</div>
         </div>
-        <div class="sa-lyric"><div class="sa-empty">等待播放信息…</div></div>
+        <div class="sa-lyric"></div>
       </div>
       <div class="sa-fps">-- FPS</div>`;
     document.body.appendChild(root);
@@ -1187,19 +1212,141 @@ class SodaAmll {
     const albumEl = this.root.querySelector('.sa-album');
     albumEl.textContent = this.settings.showAlbum ? (pl.album && pl.album.name) || '' : '';
     albumEl.style.display = this.settings.showAlbum && pl.album ? '' : 'none';
+    const hasLyric = !!(md.lyrics && md.lyrics.content);
     if (this.emptyEl) {
-      const hasLyric = !!(md.lyrics && md.lyrics.content);
-      this.emptyEl.textContent = pl.name ? '该歌曲暂无歌词' : '等待播放信息…';
-      this.emptyEl.style.display = pl.name && hasLyric ? 'none' : 'flex';
+      this.emptyEl.textContent = '等待播放信息…';
+      this.emptyEl.style.display = pl.name ? 'none' : 'block';
     }
+    this.root.classList.toggle('sa-nolyric', !hasLyric);
   }
 
   paintTheme() {
     if (!this.root) return;
+    const s = this.settings;
     const bg = this.root.querySelector('.sa-bg');
     if (!bg) return;
-    bg.classList.toggle('sa-solid', this.settings.bgType === 'solid');
+    const flowHost = this.root.querySelector('.sa-flow');
+
+    let mode = s.bgEnabled ? s.bgType : 'solid';
+    if (mode === 'flow' && !this.ensureFlowBg()) mode = 'blur'; /* WebGL unavailable */
+
+    if (mode === 'flow') {
+      if (flowHost) flowHost.classList.add('sa-on');
+      this.applyFlowSettings();
+      this.setFlowAlbum(this.cover);
+      if (this.open) this.flowBg.resume();
+    } else {
+      if (flowHost) flowHost.classList.remove('sa-on');
+      if (this.flowBg) this.flowBg.pause();
+    }
+    bg.classList.toggle('sa-mode-flow', mode === 'flow');
+    bg.classList.toggle('sa-mode-blur', mode === 'blur');
+    bg.classList.toggle('sa-solid', mode === 'solid');
     this.setBg(this.cover);
+  }
+
+  /* ---- fluid background (AMLL IsolationRenderer) ----
+     Isolation is the WebGL port of Cirrus' IsolationEffect: four palette
+     colours blended by a noise-driven gradient. The older MeshGradientRenderer
+     lays a Bezier patch mesh over the artwork, whose patch seams show up as a
+     stray bright S-shaped band, so it is only kept as a fallback. */
+  ensureFlowBg() {
+    if (this.flowBg) return this.flowBg;
+    if (this.flowBgFailed || !this.root) return null;
+    const host = this.root.querySelector('.sa-flow');
+    if (!host) return null;
+    try {
+      let render = null;
+      if (IsolationRenderer.isSupported()) {
+        render = BackgroundRender.new(IsolationRenderer);
+        try {
+          render.getRenderer().setOptions({
+            lightWave: false,
+            dithering: !this.settings.bgPerf,
+          });
+        } catch (e) {}
+      } else if (MeshGradientRenderer.isSupported()) {
+        render = BackgroundRender.new(MeshGradientRenderer);
+      }
+      if (!render) throw new Error('WebGL unavailable');
+      const el = render.getElement();
+      /* AMLL parks its canvas at z-index -1 with strict containment; the layout
+         here owns the stacking order instead, so hand it back to CSS. */
+      el.style.zIndex = '';
+      el.style.contain = '';
+      el.style.pointerEvents = '';
+      host.appendChild(el);
+      this.flowBg = render;
+      if (!this.open) render.pause();
+      LOG('flow background ready');
+    } catch (e) {
+      this.flowBgFailed = true;
+      LOG('flow background unavailable', e && e.message);
+    }
+    return this.flowBg || null;
+  }
+
+  applyFlowSettings() {
+    const render = this.flowBg;
+    if (!render) return;
+    const s = this.settings;
+    const perf = !!s.bgPerf;
+    const scale = clamp(Number(s.bgRenderScale) || 0.5, 0.2, 1);
+    const fps = clamp(Math.round(Number(s.bgFps)) || 0, 0, 60);
+    /* performance mode caps both the raster resolution and the frame rate and
+       drops the shader's dither pass: the cheapest way to help an integrated
+       GPU keep a steady picture. */
+    render.setRenderScale(perf ? Math.min(scale, 0.35) : scale);
+    render.setFlowSpeed(clamp(Number(s.bgFlowSpeed) || 1, 0.1, 4));
+    /* fps 0 means "hold still": the renderer's rAF loop only exits on its own
+       once static mode is on, so drive it from there instead of a 0 interval. */
+    const base = fps > 0 ? fps : 30;
+    const effFps = perf ? Math.min(base, 24) : base;
+    render.setFPS(effFps);
+    render.setStaticMode(fps <= 0);
+    try {
+      const inner = render.getRenderer();
+      if (inner && typeof inner.setOptions === 'function') {
+        inner.setOptions({ lightWave: false, dithering: !perf });
+      }
+    } catch (e) {}
+  }
+
+  /* MeshGradientRenderer wants a CORS-clean image for its WebGL texture, so the
+     cover is re-fetched with crossOrigin rather than reusing the display <img>. */
+  setFlowAlbum(url) {
+    const render = this.flowBg;
+    if (!render) return;
+    const u = url || '';
+    if (this.flowAlbumUrl === u) return;
+    this.flowAlbumUrl = u;
+    if (!u) {
+      render.setAlbum('');
+      return;
+    }
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      if (this.flowBg === render) {
+        this.flowAlbumErrors = 0;
+        render.setAlbum(img);
+      }
+    };
+    img.onerror = () => {
+      if (this.flowBg !== render) return;
+      this.flowAlbumErrors = (this.flowAlbumErrors || 0) + 1;
+      LOG('flow background: cover not readable, attempt', this.flowAlbumErrors);
+      if (this.flowAlbumErrors < 3) return;
+      /* the CDN refuses cross-origin reads: drop back to the blurred artwork */
+      this.flowBgFailed = true;
+      this.flowBg = null;
+      this.flowAlbumUrl = null;
+      try {
+        render.dispose();
+      } catch (e) {}
+      this.paintTheme();
+    };
+    img.src = u;
   }
 
   tick() {
@@ -1283,6 +1430,7 @@ class SodaAmll {
     }
     this.visible = false;
     if (this.player) this.player.pause();
+    if (this.flowBg) this.flowBg.pause();
   }
 
   toggle() {
@@ -1638,8 +1786,12 @@ class SodaAmll {
 
       /* 背景 */
       { page: 'bg', group: 'type', type: 'switch', key: 'bgEnabled', label: '显示歌词背景', hint: '使用当前专辑封面作为背景' },
-      { page: 'bg', group: 'type', type: 'select', key: 'bgType', label: '背景类型', hint: '模糊封面 / 深色渐变', options: [['blur', '模糊封面'], ['solid', '深色渐变']] },
-      { page: 'bg', group: 'tune', type: 'range', key: 'bgBlur', label: '背景模糊', hint: '数值越高越柔和，性能消耗越大', min: 0, max: 200, step: 2, fmt: (v) => `${Math.round(v)}px` },
+      { page: 'bg', group: 'type', type: 'select', key: 'bgType', label: '背景类型', hint: '流体取色 / 模糊封面 / 深色渐变', options: [['flow', '流体背景'], ['blur', '模糊封面'], ['solid', '深色渐变']] },
+      { page: 'bg', group: 'flow', type: 'range', key: 'bgFlowSpeed', label: '流体速度', hint: '颜色流动的快慢，默认 1.00', min: 0.1, max: 4, step: 0.05, fmt: (v) => v.toFixed(2) },
+      { page: 'bg', group: 'flow', type: 'range', key: 'bgRenderScale', label: '渲染精度', hint: '流体背景的渲染比例，越低越省性能', min: 0.2, max: 1, step: 0.05, fmt: (v) => `${Math.round(v * 100)}%` },
+      { page: 'bg', group: 'flow', type: 'range', key: 'bgFps', label: '渲染帧率', hint: '流体背景动画帧率，0 为静止', min: 0, max: 60, step: 1, fmt: (v) => (v ? `${Math.round(v)} FPS` : '静止') },
+      { page: 'bg', group: 'flow', type: 'switch', key: 'bgPerf', label: '性能模式', hint: '降低背景分辨率与帧率，并关闭歌词模糊和缩放，老机型更流畅' },
+      { page: 'bg', group: 'tune', type: 'range', key: 'bgBlur', label: '背景模糊', hint: '模糊封面模式下的柔和程度', min: 0, max: 200, step: 2, fmt: (v) => `${Math.round(v)}px` },
       { page: 'bg', group: 'tune', type: 'range', key: 'bgBrightness', label: '背景亮度', hint: '默认 0.55', min: 0.15, max: 1.2, step: 0.01, fmt: (v) => v.toFixed(2) },
       { page: 'bg', group: 'tune', type: 'range', key: 'bgSaturate', label: '背景饱和度', hint: '默认 1.90', min: 0.5, max: 3, step: 0.05, fmt: (v) => v.toFixed(2) },
 
@@ -1923,6 +2075,9 @@ class SodaAmll {
     html.style.setProperty('--sa-bar-cover-a', String(s.barCover));
     html.style.setProperty('--sa-lyric-weight', String(s.lyricWeight));
     html.style.setProperty('--sa-word-bright', String(s.wordBright));
+    html.style.setProperty('--sa-bg-blur', `${Math.round(s.bgBlur)}px`);
+    html.style.setProperty('--sa-bg-sat', s.bgSaturate.toFixed(2));
+    html.style.setProperty('--sa-bg-bright', s.bgBrightness.toFixed(2));
 
     if (this.root) {
       this.root.classList.toggle('sa-noanim', !s.lyricTransition);
@@ -1930,20 +2085,30 @@ class SodaAmll {
       const cover = this.root.querySelector('.sa-cover-wrap');
       if (cover) cover.classList.toggle('sa-nocursor', !!s.coverHideCursor);
       const bg = this.root.querySelector('.sa-bg');
-      if (bg) {
-        bg.style.display = s.bgEnabled ? '' : 'none';
-        bg.style.filter = `blur(${Math.round(s.bgBlur)}px) saturate(${s.bgSaturate.toFixed(2)}) brightness(${s.bgBrightness.toFixed(2)})`;
-      }
+      if (bg) bg.style.display = s.bgEnabled ? '' : 'none';
+      const flow = this.root.querySelector('.sa-flow');
+      if (flow) flow.style.display = s.bgEnabled ? '' : 'none';
       const tint = this.root.querySelector('.sa-tint');
       if (tint) tint.style.display = s.bgEnabled ? '' : 'none';
       const vig = this.root.querySelector('.sa-vignette');
       if (vig) vig.style.display = s.bgEnabled ? '' : 'none';
     }
     if (this.player) {
-      this.player.setEnableBlur(s.lyricBlur);
-      this.player.setEnableScale(s.lyricScale);
-      this.player.setWordFadeWidth(s.wordFade);
-      this.player.setHidePassedLines(s.hidePassed);
+      const perf = !!s.bgPerf;
+      const want = {
+        blur: perf ? false : !!s.lyricBlur,
+        scale: perf ? false : !!s.lyricScale,
+        wordFade: s.wordFade,
+        hidePassed: !!s.hidePassed,
+      };
+      /* Each of these rebuilds the whole lyric view (wordFade regenerates the
+         mask of every line), which costs seconds on a long song. applySettings
+         runs on every slider tick, so only push what actually changed. */
+      const cur = this.__playerOpts || (this.__playerOpts = {});
+      if (cur.blur !== want.blur) { cur.blur = want.blur; this.player.setEnableBlur(want.blur); }
+      if (cur.scale !== want.scale) { cur.scale = want.scale; this.player.setEnableScale(want.scale); }
+      if (cur.wordFade !== want.wordFade) { cur.wordFade = want.wordFade; this.player.setWordFadeWidth(want.wordFade); }
+      if (cur.hidePassed !== want.hidePassed) { cur.hidePassed = want.hidePassed; this.player.setHidePassedLines(want.hidePassed); }
     }
     this.applyFontScale();
     this.applyBarCover();
