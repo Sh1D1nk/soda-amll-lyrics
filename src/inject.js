@@ -351,22 +351,24 @@ html[data-sa-font="system"] #soda-amll-overlay,html[data-sa-font="system"] #soda
 .sa-tint{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.28),rgba(0,0,0,.14) 40%,rgba(0,0,0,.4))}
 .sa-vignette{position:absolute;inset:0;pointer-events:none;background:radial-gradient(130% 110% at 25% 10%,rgba(255,255,255,.06),rgba(0,0,0,.5) 78%)}
 
-.sa-stage{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr}
-/* no lyric data: the right column collapses and everything sits in the middle */
-#soda-amll-overlay.sa-nolyric .sa-stage{grid-template-columns:1fr}
-#soda-amll-overlay.sa-nolyric .sa-left{grid-column:1;width:100%}
-#soda-amll-overlay.sa-nolyric .sa-lyric{display:none}
-
-.sa-left{grid-column:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0;height:100%}
+.sa-stage{position:absolute;inset:0;display:flex}
+.sa-left{flex:1 1 50%;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0;height:100%;transition:transform .55s cubic-bezier(.4,0,.2,1);will-change:transform}
+/* No lyric data: the left column (cover + meta) glides to the middle while the
+   empty lyric column slides off to the right. Both are compositor-only
+   transforms on purpose — animating the column width instead would force the
+   AMLL player to re-layout on every frame, which is what made the fold-in
+   stutter while the fold-out stayed smooth. */
+#soda-amll-overlay.sa-nolyric .sa-left{transform:translateX(50%)}
+#soda-amll-overlay.sa-nolyric .sa-lyric{transform:translateX(100%);opacity:0;pointer-events:none}
 
 /* the little bar is a close button: hovering morphs it into a rounded square
    with an X, and it trails the pointer on a spring until it snaps back. */
-.sa-close{position:relative;display:flex;align-items:center;justify-content:center;width:clamp(38px,5.4vh,60px);height:clamp(24px,3.6vh,40px);margin-bottom:2.6vh;padding:0;border:0;background:transparent;cursor:none;touch-action:none;transition:transform .22s cubic-bezier(.22,1.2,.36,1);will-change:transform}
+.sa-close{position:relative;display:flex;align-items:center;justify-content:center;width:clamp(44px,6vh,66px);height:clamp(28px,4.2vh,46px);margin-bottom:2.6vh;padding:0;border:0;background:transparent;cursor:none;touch-action:none;transition:transform .22s cubic-bezier(.22,1.2,.36,1);will-change:transform}
 .sa-close .sa-chip{position:relative;display:flex;align-items:center;justify-content:center;width:clamp(40px,5.6vh,64px);height:clamp(7px,1.05vh,12px);border-radius:100px;background:rgba(255,255,255,.32);transition:width .36s cubic-bezier(.34,1.4,.5,1),height .36s cubic-bezier(.34,1.4,.5,1),border-radius .36s cubic-bezier(.34,1.4,.5,1),background-color .3s ease}
-.sa-close.sa-expand .sa-chip{width:clamp(16px,2.2vh,26px);height:clamp(16px,2.2vh,26px);border-radius:clamp(4px,.6vh,7px);background:rgba(255,255,255,.2)}
+.sa-close.sa-expand .sa-chip{width:clamp(24px,3.4vh,40px);height:clamp(24px,3.4vh,40px);border-radius:clamp(6px,.9vh,11px);background:rgba(255,255,255,.2)}
 /* the host app styles bare <button> globally, which would otherwise repaint the
    X, so the glyph colour is pinned here. */
-.sa-close .sa-x{position:absolute;width:62%;height:62%;color:#0d0d0d;opacity:0;transform:scale(.4) rotate(-60deg);transition:opacity .22s ease,transform .36s cubic-bezier(.34,1.4,.5,1);pointer-events:none}
+.sa-close .sa-x{position:absolute;width:57%;height:57%;color:#0d0d0d;opacity:0;transform:scale(.4) rotate(-60deg);transition:opacity .22s ease,transform .36s cubic-bezier(.34,1.4,.5,1);pointer-events:none}
 .sa-close .sa-x svg{display:block;width:100%;height:100%}
 .sa-close.sa-expand .sa-x{opacity:.95;transform:none}
 
@@ -391,7 +393,7 @@ html[data-sa-font="system"] #soda-amll-overlay,html[data-sa-font="system"] #soda
 .sa-progress{margin-top:2.2vh;display:flex;align-items:center;min-height:20px;cursor:pointer;touch-action:none;transform-origin:center}
 .sa-progress-inner{flex:1;width:100%;height:clamp(3px,.5vh,6px);border-radius:100px;background:rgba(255,255,255,.15);overflow:hidden;transition:height .3s cubic-bezier(.38,1.625,.62,.995)}
 .sa-progress:hover .sa-progress-inner,.sa-progress.sa-active .sa-progress-inner{height:clamp(5px,.75vh,9px)}
-.sa-progress-fill{height:100%;width:0;background:#fff;opacity:.4;transition:opacity .2s}
+.sa-progress-fill{height:100%;width:100%;transform:scaleX(0);transform-origin:left center;background:#fff;opacity:.4;transition:opacity .2s;will-change:transform}
 .sa-progress.sa-active .sa-progress-fill{opacity:.85}
 .sa-times{display:flex;margin-top:7px;font-weight:400;opacity:.45;font-size:.72em;letter-spacing:.5px;line-height:1.4}
 .sa-times>*{flex:1}
@@ -428,8 +430,9 @@ html[data-sa-font="system"] #soda-amll-overlay,html[data-sa-font="system"] #soda
 .sa-vfill{height:100%;width:30%;background:#fff;opacity:.4;transition:opacity .2s}
 .sa-vtrack.sa-active .sa-vfill{opacity:.85}
 
-.sa-lyric{grid-column:2;position:relative;min-width:0;height:100%;padding-right:8%;box-sizing:border-box}
-.sa-lyric .amll-lyric-player{width:100%;height:100%;--amll-lp-color:rgba(255,255,255,.96);font-weight:var(--sa-lyric-weight,600);-webkit-mask-image:linear-gradient(to bottom,transparent 4%,#000 18%,#000 82%,transparent 96%);mask-image:linear-gradient(to bottom,transparent 4%,#000 18%,#000 82%,transparent 96%)}
+.sa-lyric{position:relative;flex:1 1 50%;min-width:0;height:100%;padding-right:8%;box-sizing:border-box;transition:transform .55s cubic-bezier(.4,0,.2,1),opacity .4s cubic-bezier(.4,0,.2,1);will-change:transform;overflow:hidden;-webkit-mask-image:linear-gradient(to bottom,transparent 2%,#000 14%,#000 86%,transparent 98%);mask-image:linear-gradient(to bottom,transparent 2%,#000 14%,#000 86%,transparent 98%)}
+#soda-amll-overlay.sa-noanim .sa-left,#soda-amll-overlay.sa-noanim .sa-lyric{transition:none}
+.sa-lyric .amll-lyric-player{width:100%;height:100%;--amll-lp-color:rgba(255,255,255,.96);font-weight:var(--sa-lyric-weight,600);contain:layout style}
 .sa-lyric .amll-lyric-player .FmKaba_lyricLineWrapper{cursor:pointer}
 /* AMLL only exposes the sung-region highlight opacity through a class rule, so
    the brightness control has to out-specify .FmKaba_lyricLine.FmKaba_gradientMask. */
@@ -567,6 +570,7 @@ class SodaAmll {
   constructor() {
     this.open = false;
     this.root = null;
+    this.el = null;
     this.player = null;
     this.raf = 0;
     this.baseMs = 0;
@@ -575,6 +579,13 @@ class SodaAmll {
     this.playing = false;
     this.trackKey = null;
     this.cover = '';
+    this.__coverUrl = '';
+    /* bumped on every track change: the fluid-background palette is requested per
+       track, and a request from a track the user already skipped past must not be
+       allowed to land (see setFlowAlbum) */
+    this.__trackGen = 0;
+    this.flowActive = false;
+    this.hasLyric = false;
     this.state = null;
     this.hooked = false;
     this.hookTimer = 0;
@@ -638,10 +649,8 @@ class SodaAmll {
     }
     if (this.playing !== wasPlaying) {
       this.paintPlayIcon();
-      if (this.root) {
-        const wrap = this.root.querySelector('.sa-cover-wrap');
-        if (wrap) wrap.classList.toggle('sa-playing', this.playing);
-      }
+      const wrap = this.el && this.el.coverWrap;
+      if (wrap) wrap.classList.toggle('sa-playing', this.playing);
     }
 
     if (typeof s.volume === 'number' && !this.volDragging) {
@@ -652,41 +661,96 @@ class SodaAmll {
 
     const md = s.mediaDetail;
     const key = md && md.playable ? md.playable.key || md.playable.id : null;
-    if (key && key !== this.trackKey) {
-      this.trackKey = key;
+    const trackChanged = !!(key && key !== this.trackKey);
+    if (trackChanged) this.trackKey = key;
+    /* store the state before applyTrack runs: it paints the metadata, and doing
+       that against the previous state made the first paint of a new track show
+       the old artwork until the next message corrected it. */
+    this.state = s;
+    if (trackChanged) {
       this.applyTrack(md, Math.abs(ms - est) > 400);
       /* an explicit prev/next press already animated its own button */
       if (performance.now() - (this.lastTransportAt || 0) > 1200) this.pulseTransport('both');
     } else if (this.player && Math.abs(ms - est) > 900) {
       this.player.setCurrentTime(ms, true);
     }
-    this.state = s;
     if (this.open) {
-      this.paintMeta();
+      /* applyTrack already repainted the metadata, so only the ordinary
+         transport ticks need the extra pass. */
+      if (!trackChanged) this.paintMeta();
       this.paintProgress();
     }
   }
 
   applyTrack(md, seek) {
     const pl = (md && md.playable) || {};
-    this.cover = coverUrl(pl.cover_url);
+    /* a new track invalidates every in-flight background-palette request: the
+       artwork url often does not change (the host ships the metadata first, and
+       going back re-uses the same url), so keying the request off the url alone
+       let a slow request from the previous track land afterwards and tint the
+       background with the wrong cover. */
+    this.__trackGen = (this.__trackGen || 0) + 1;
+    /* The host ships the new track's metadata before its artwork, so an empty
+       url here means "not yet", not "no cover". Blanking the cover on it made
+       the swap land as a hard cut a beat later; leave the previous artwork up
+       and let applyCover fade the real one in when it arrives. */
+    const cover = coverUrl(pl.cover_url);
+    if (cover) this.applyCover(cover);
     const lines = toAmllLines(md && md.lyrics, this.settings);
+    /* drives the lyric column fold-out; keyed off the lines that actually made
+       it into the player, not off the raw payload. */
+    this.hasLyric = lines.length > 0;
+    this.__lines = lines;
     LOG('track', pl.name, 'lines', lines.length);
     this.fab();
     this.applyBarCover();
     if (!this.player) return;
-    this.player.setLyricLines(lines, this.baseMs);
-    if (seek) this.player.setCurrentTime(this.baseMs, true);
+    /* Rebuilding the lyric view is the one genuinely expensive step of a track
+       change. When the page is closed there is nobody to show it to, so park the
+       lines and pay for them on the next open — otherwise every song skipped
+       while just listening rebuilds a view that is never seen. */
     if (this.open) {
+      this.pushLyricLines(lines, seek);
       this.paintMeta();
       this.paintTheme();
+    } else {
+      this.__linesDirty = true;
     }
+  }
+
+  /* hands parsed lines to the player; kept apart from applyTrack so the DOM cost
+     can be deferred to the moment the page is actually visible. */
+  pushLyricLines(lines, seek) {
+    this.__linesDirty = false;
+    this.__pushed = true;
+    this.player.setLyricLines(lines, this.baseMs);
+    if (seek) this.player.setCurrentTime(this.baseMs, true);
+    /* Building the view is cheap (a few ms); the expensive frame is the first one
+       that animates it, where every freshly built line must be styled and painted
+       at once. That lands as a single long task and, if it fires mid-slide, is
+       exactly what makes the fold-in stutter. Advance the player by one frame and
+       flush the resulting layout here instead, while the column is still folded
+       away and nothing is watching it. */
+    try {
+      this.player.update(16);
+      if (this.el && this.el.lyric) void this.el.lyric.offsetHeight;
+    } catch (e) {}
   }
 
   rebuildLyrics() {
     if (!this.player || !this.state || !this.state.mediaDetail) return;
     const t = this.playing ? this.baseMs + (performance.now() - this.baseAt) : this.baseMs;
-    this.player.setLyricLines(toAmllLines(this.state.mediaDetail.lyrics, this.settings), t);
+    const lines = toAmllLines(this.state.mediaDetail.lyrics, this.settings);
+    this.hasLyric = lines.length > 0;
+    this.__lines = lines;
+    if (!this.open) {
+      this.__linesDirty = true;
+      return;
+    }
+    this.__linesDirty = false;
+    this.__pushed = true;
+    this.player.setLyricLines(lines, t);
+    this.paintMeta();
   }
 
   /* ---- ui ---- */
@@ -742,6 +806,29 @@ class SodaAmll {
     this.root = root;
     this.emptyEl = root.querySelector('.sa-empty');
     this.fpsEl = root.querySelector('.sa-fps');
+    /* the paint helpers run on every transport tick / animation frame, so their
+       nodes are resolved once here instead of re-queried each time. */
+    this.el = {
+      left: root.querySelector('.sa-left'),
+      lyric: root.querySelector('.sa-lyric'),
+      bg: root.querySelector('.sa-bg'),
+      bgLayers: root.querySelectorAll('.sa-bg-layer'),
+      flow: root.querySelector('.sa-flow'),
+      tint: root.querySelector('.sa-tint'),
+      vignette: root.querySelector('.sa-vignette'),
+      cover: root.querySelector('.sa-cover'),
+      ghost: root.querySelector('.sa-cover-ghost'),
+      coverWrap: root.querySelector('.sa-cover-wrap'),
+      name: root.querySelector('.sa-name'),
+      artist: root.querySelector('.sa-artist'),
+      album: root.querySelector('.sa-album'),
+      progressFill: root.querySelector('.sa-progress-fill'),
+      tCur: root.querySelector('.sa-t-cur'),
+      tDur: root.querySelector('.sa-t-dur'),
+      play: root.querySelector('.sa-play'),
+      vfill: root.querySelector('.sa-vfill'),
+      vlow: root.querySelector('.sa-vlow'),
+    };
 
     this.player = new LyricPlayer();
     root.querySelector('.sa-lyric').appendChild(this.player.getElement());
@@ -1117,120 +1204,248 @@ class SodaAmll {
   }
 
   paintVolume() {
-    if (!this.root) return;
+    const el = this.el;
+    if (!el) return;
     const v = this.volume == null ? 0.3 : this.volume;
     const pct = `${Math.round(v * 100)}%`;
-    const fill = this.root.querySelector('.sa-vfill');
-    if (fill) fill.style.width = pct;
-    const low = this.root.querySelector('.sa-vlow');
-    if (low) low.innerHTML = v <= 0.001 ? ICON.volOff : ICON.volLow;
+    if (pct !== this.__volPct) {
+      this.__volPct = pct;
+      el.vfill.style.width = pct;
+    }
+    /* the icon swap parses an SVG, so only do it when mute actually flips */
+    const muted = v <= 0.001;
+    if (muted !== this.__volMuted) {
+      this.__volMuted = muted;
+      el.vlow.innerHTML = muted ? ICON.volOff : ICON.volLow;
+    }
   }
 
   paintPlayIcon() {
-    if (!this.root) return;
-    const btn = this.root.querySelector('.sa-play');
-    if (!btn) return;
-    const html = this.playing ? ICON.pause : ICON.play;
-    if (btn.innerHTML !== html) btn.innerHTML = html;
+    const el = this.el;
+    if (!el || !el.play) return;
+    if (this.__playIcon === this.playing) return;
+    this.__playIcon = this.playing;
+    el.play.innerHTML = this.playing ? ICON.pause : ICON.play;
   }
 
+  /* runs on every animation frame: resolve nothing, and only touch the DOM when
+     a value actually changed — the countdown labels only move once a second. */
   paintProgress() {
-    if (!this.root) return;
+    const el = this.el;
+    if (!el || !el.progressFill) return;
     const now = performance.now();
     const t = this.playing ? this.baseMs + (now - this.baseAt) : this.baseMs;
     const ms = this.durationMs ? clamp(t, 0, this.durationMs) : t;
     const ratio = this.durationMs ? ms / this.durationMs : 0;
-    const fill = this.root.querySelector('.sa-progress-fill');
-    if (fill) fill.style.width = `${(ratio * 100).toFixed(2)}%`;
-    this.root.querySelector('.sa-t-cur').textContent = fmtTime(ms / 1000);
-    this.root.querySelector('.sa-t-dur').textContent = this.durationMs ? `-${fmtTime((this.durationMs - ms) / 1000)}` : '-0:00';
+    /* scaleX rather than width: the fill moves every frame, and a width change
+       sends the progress row through layout each time while a transform stays on
+       the compositor. The fill is a flat colour, so the stretch is invisible. */
+    const pct = ratio.toFixed(4);
+    if (pct !== this.__pct) {
+      this.__pct = pct;
+      el.progressFill.style.transform = `scaleX(${pct})`;
+    }
+    const cur = fmtTime(ms / 1000);
+    if (cur !== this.__tCur) {
+      this.__tCur = cur;
+      el.tCur.textContent = cur;
+    }
+    const dur = this.durationMs ? `-${fmtTime((this.durationMs - ms) / 1000)}` : '-0:00';
+    if (dur !== this.__tDur) {
+      this.__tDur = dur;
+      el.tDur.textContent = dur;
+    }
+  }
+
+  /* Single funnel for artwork changes. The display <img>, the blurred layers
+     and the fluid background each keep their own copy of the cover, and they
+     used to be updated from different call sites: the background ones only ran
+     on a track change, while the artwork itself can arrive a message later. The
+     result was a background that stayed one track behind — including turning
+     into the *previous* cover's colours when you went back. Everything now
+     reads this.cover through here so they cannot drift apart. */
+  applyCover(url) {
+    url = url || '';
+    if (url !== this.__coverUrl) {
+      this.__coverUrl = url;
+      this.cover = url;
+      this.setCover(url);
+      this.setBg(url);
+      this.applyBarCover();
+    }
+    /* The palette belongs to the track, not to the url, so the refresh has to
+       run even when the artwork url did not change — that is exactly the case
+       where a request left over from the track in between would otherwise stay
+       in charge (see setFlowAlbum). It is a cheap early-out once the current
+       track's artwork is already applied. */
+    if (this.flowActive) this.setFlowAlbum(this.cover);
   }
 
   /* crossfade the artwork: the new cover fades in on a ghost layer sitting on
-     top of the committed one, which is swapped in once the fade is done. */
+     top of the committed one, which is swapped in once the fade is done.
+     Every call claims a token so a slow preload from a track the user already
+     skipped past can never paint over the current one. */
   setCover(url) {
-    if (!this.root) return;
-    const img = this.root.querySelector('.sa-cover');
-    const ghost = this.root.querySelector('.sa-cover-ghost');
+    const el = this.el;
+    if (!el) return;
+    const img = el.cover;
+    const ghost = el.ghost;
     if (!img || !ghost) return;
+    url = url || '';
     const current = img.getAttribute('src') || '';
     if (url === current || url === (ghost.getAttribute('src') || '')) return;
-    const settle = () => {
-      img.src = url || '';
+    const token = (this.__coverToken = (this.__coverToken || 0) + 1);
+    const live = () => token === this.__coverToken;
+    const commit = () => {
+      if (!live()) return;
+      /* an empty url means "artwork not known yet", so keep the current image
+         instead of pointing src at nothing (which blanks it and turns the
+         eventual swap into a hard cut). */
+      if (url) img.src = url;
       ghost.style.transition = 'none';
       ghost.style.opacity = '0';
     };
     if (!this.settings.mediaAnim || !current || !url) {
       clearTimeout(this.__coverTimer);
-      settle();
+      commit();
       return;
     }
     const start = () => {
+      if (!live()) return;
       ghost.src = url;
       ghost.style.transition = 'none';
       ghost.style.opacity = '0';
       void ghost.offsetWidth;
-      ghost.style.transition = 'opacity .8s cubic-bezier(.4,0,.2,1)';
+      ghost.style.transition = 'opacity .3s cubic-bezier(.4,0,.2,1)';
       ghost.style.opacity = '1';
       clearTimeout(this.__coverTimer);
-      this.__coverTimer = setTimeout(settle, 820);
+      this.__coverTimer = setTimeout(commit, 320);
     };
-    preload(url).then(start);
+    /* Crossfade as soon as the artwork is decodable, so the fade never reveals an
+       empty layer. The only wait is the image's own load time — there is no fixed
+       delay stacked on top of it, which is what used to make the cover feel late,
+       and no early hard swap, which is what made it feel abrupt. */
+    let settled = false;
+    const finish = (ready) => {
+      if (settled || !live()) return;
+      settled = true;
+      clearTimeout(cap);
+      if (ready) start();
+      else commit();
+    };
+    /* Safety valve only, and deliberately generous: committing early turns a
+       merely *slow* cover (a CDN fetch can easily outrun a short timeout) into
+       the hard cut this whole path exists to avoid. Only a request that has not
+       produced a decodable frame after 2.5s is treated as hung. */
+    const cap = setTimeout(() => finish(false), 2500);
+    const probe = new Image();
+    probe.onload = () => finish(true);
+    probe.onerror = () => finish(false);
+    probe.src = url;
   }
 
   setBg(url) {
-    if (!this.root) return;
-    const layers = this.root.querySelectorAll('.sa-bg-layer');
-    if (layers.length < 2) return;
+    const layers = this.el && this.el.bgLayers;
+    if (!layers || layers.length < 2) return;
     const cur = this.bgLayer || 0;
-    const next = 1 - cur;
     const u = url || '';
-    if ((layers[cur].dataset.url || '') === u) return;
+    /* an empty url means the artwork is not known yet; keep the layer that is
+       already up rather than wiping it to `none`. */
+    if (!u || (layers[cur].dataset.url || '') === u) return;
+    /* claim a token so a slow preload from a track the user already skipped
+       past cannot flip the layers back to the wrong artwork */
+    const token = (this.__bgToken = (this.__bgToken || 0) + 1);
     const apply = () => {
-      layers[next].style.backgroundImage = u ? `url("${u}")` : 'none';
-      layers[next].dataset.url = u;
-      layers[next].classList.add('sa-on');
-      layers[cur].classList.remove('sa-on');
-      this.bgLayer = next;
+      if (token !== this.__bgToken) return;
+      const from = this.bgLayer || 0;
+      const to = 1 - from;
+      layers[to].style.backgroundImage = u ? `url("${u}")` : 'none';
+      layers[to].dataset.url = u;
+      layers[to].classList.add('sa-on');
+      layers[from].classList.remove('sa-on');
+      this.bgLayer = to;
     };
     if (!this.settings.mediaAnim || !layers[cur].dataset.url) {
       apply();
       return;
     }
-    preload(url).then(apply);
+    preload(u).then(apply);
   }
 
+  /* runs on every transport message, so every write is guarded by a change
+     check — assigning textContent/style unconditionally would invalidate style
+     and layout several times a second for no visual difference. */
   paintMeta() {
-    if (!this.root) return;
+    const el = this.el;
+    if (!el) return;
     const md = (this.state && this.state.mediaDetail) || {};
     const pl = md.playable || {};
-    this.setCover(this.cover);
-    const nameEl = this.root.querySelector('.sa-name');
-    if (!nameEl) return;
-    nameEl.textContent = pl.name || '';
-    this.root.querySelector('.sa-artist').textContent = (pl.artists || []).map((a) => a.name).join(' / ');
-    const albumEl = this.root.querySelector('.sa-album');
-    albumEl.textContent = this.settings.showAlbum ? (pl.album && pl.album.name) || '' : '';
-    albumEl.style.display = this.settings.showAlbum && pl.album ? '' : 'none';
-    const hasLyric = !!(md.lyrics && md.lyrics.content);
-    if (this.emptyEl) {
-      this.emptyEl.textContent = '等待播放信息…';
-      this.emptyEl.style.display = pl.name ? 'none' : 'block';
+    /* the app often pushes the track meta before the artwork url arrives, so
+       the cover is re-derived here instead of only on track change. */
+    const cover = coverUrl(pl.cover_url);
+    if (cover) this.applyCover(cover);
+
+    const name = pl.name || '';
+    if (name !== this.__name) {
+      this.__name = name;
+      el.name.textContent = name;
     }
-    this.root.classList.toggle('sa-nolyric', !hasLyric);
+    const artist = (pl.artists || []).map((a) => a.name).join(' / ');
+    if (artist !== this.__artist) {
+      this.__artist = artist;
+      el.artist.textContent = artist;
+    }
+    const album = this.settings.showAlbum ? (pl.album && pl.album.name) || '' : '';
+    if (album !== this.__album) {
+      this.__album = album;
+      el.album.textContent = album;
+    }
+    const albumShown = !!(this.settings.showAlbum && pl.album);
+    if (albumShown !== this.__albumShown) {
+      this.__albumShown = albumShown;
+      el.album.style.display = albumShown ? '' : 'none';
+    }
+    const emptyShown = !name;
+    if (emptyShown !== this.__emptyShown) {
+      this.__emptyShown = emptyShown;
+      this.emptyEl.style.display = emptyShown ? 'block' : 'none';
+    }
+    const nolyric = !this.hasLyric;
+    if (nolyric !== this.__nolyric) {
+      this.__nolyric = nolyric;
+      const root = this.root;
+      const token = (this.__foldToken = (this.__foldToken || 0) + 1);
+      if (nolyric) {
+        root.classList.add('sa-nolyric');
+      } else {
+        /* Folding the lyric column back in is the expensive direction: the
+           player has just rebuilt every line's DOM, and if the slide starts on
+           the same frame the rebuild's first layout/paint competes with the
+           transform (the fold-out direction has nothing new to paint, which is
+           why it stayed smooth). Flush the rebuild's layout now, then start the
+           slide a frame later so the animation gets the main thread to itself. */
+        void root.offsetHeight;
+        requestAnimationFrame(() => {
+          if (token !== this.__foldToken) return;
+          root.classList.remove('sa-nolyric');
+        });
+      }
+    }
   }
 
   paintTheme() {
-    if (!this.root) return;
+    const el = this.el;
+    if (!this.root || !el) return;
     const s = this.settings;
-    const bg = this.root.querySelector('.sa-bg');
+    const bg = el.bg;
     if (!bg) return;
-    const flowHost = this.root.querySelector('.sa-flow');
+    const flowHost = el.flow;
 
     let mode = s.bgEnabled ? s.bgType : 'solid';
     if (mode === 'flow' && !this.ensureFlowBg()) mode = 'blur'; /* WebGL unavailable */
 
-    if (mode === 'flow') {
+    this.flowActive = mode === 'flow';
+    if (this.flowActive) {
       if (flowHost) flowHost.classList.add('sa-on');
       this.applyFlowSettings();
       this.setFlowAlbum(this.cover);
@@ -1277,6 +1492,7 @@ class SodaAmll {
       el.style.pointerEvents = '';
       host.appendChild(el);
       this.flowBg = render;
+      this.__flowOpts = null; /* fresh renderer: force the next push through */
       if (!this.open) render.pause();
       LOG('flow background ready');
     } catch (e) {
@@ -1296,57 +1512,123 @@ class SodaAmll {
     /* performance mode caps both the raster resolution and the frame rate and
        drops the shader's dither pass: the cheapest way to help an integrated
        GPU keep a steady picture. */
-    render.setRenderScale(perf ? Math.min(scale, 0.35) : scale);
-    render.setFlowSpeed(clamp(Number(s.bgFlowSpeed) || 1, 0.1, 4));
+    const effScale = perf ? Math.min(scale, 0.35) : scale;
+    const speed = clamp(Number(s.bgFlowSpeed) || 1, 0.1, 4);
     /* fps 0 means "hold still": the renderer's rAF loop only exits on its own
        once static mode is on, so drive it from there instead of a 0 interval. */
     const base = fps > 0 ? fps : 30;
     const effFps = perf ? Math.min(base, 24) : base;
-    render.setFPS(effFps);
-    render.setStaticMode(fps <= 0);
-    try {
-      const inner = render.getRenderer();
-      if (inner && typeof inner.setOptions === 'function') {
-        inner.setOptions({ lightWave: false, dithering: !perf });
-      }
-    } catch (e) {}
+    const staticMode = fps <= 0;
+    const dithering = !perf;
+    /* setRenderScale reallocates the render target, so applySettings (which runs
+       on every slider tick) must not push these again unless they really moved. */
+    const cur = this.__flowOpts || (this.__flowOpts = {});
+    if (cur.scale !== effScale) { cur.scale = effScale; render.setRenderScale(effScale); }
+    if (cur.speed !== speed) { cur.speed = speed; render.setFlowSpeed(speed); }
+    if (cur.fps !== effFps) { cur.fps = effFps; render.setFPS(effFps); }
+    if (cur.staticMode !== staticMode) { cur.staticMode = staticMode; render.setStaticMode(staticMode); }
+    if (cur.dithering !== dithering) {
+      cur.dithering = dithering;
+      try {
+        const inner = render.getRenderer();
+        if (inner && typeof inner.setOptions === 'function') {
+          inner.setOptions({ lightWave: false, dithering });
+        }
+      } catch (e) {}
+    }
   }
 
-  /* MeshGradientRenderer wants a CORS-clean image for its WebGL texture, so the
-     cover is re-fetched with crossOrigin rather than reusing the display <img>. */
+  /* The renderer wants a CORS-clean image for its WebGL texture, so the cover is
+     re-fetched with crossOrigin rather than reusing the display <img>.
+     The palette belongs to the *track*, not merely to the artwork url, and two
+     things used to go wrong because of it:
+       - a url that failed to load once was blacklisted for the whole session, so
+         that track kept showing the previous track's palette — and coming back to
+         it kept showing the one you had just left;
+       - a slow request started for a track you had already skipped past stayed
+         "wanted" (the artwork url does not change on the way back), so it tinted
+         the background with the wrong cover when it finally landed.
+     Every track change bumps `__trackGen`: a request only lands while it still
+     belongs to the current generation, and a failure is remembered per
+     generation so the next visit — or a short delayed retry — tries again. */
   setFlowAlbum(url) {
     const render = this.flowBg;
     if (!render) return;
     const u = url || '';
-    if (this.flowAlbumUrl === u) return;
-    this.flowAlbumUrl = u;
+    const gen = this.__trackGen || 0;
+    /* an empty url means the artwork is not known yet, not "no cover" — keeping
+       the current texture beats flashing back to a colourless background. */
     if (!u) {
-      render.setAlbum('');
+      this.flowAlbumWant = '';
+      this.flowAlbumGen = gen;
       return;
     }
+    if (this.flowAlbumApplied === u && this.flowAlbumGen === gen) return;
+    if (this.flowAlbumWant === u && this.flowAlbumGen === gen) return;
+    if (this.flowAlbumBadUrl === u && this.flowAlbumBadGen === gen) return;
+    this.flowAlbumWant = u;
+    this.flowAlbumGen = gen;
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => {
-      if (this.flowBg === render) {
-        this.flowAlbumErrors = 0;
-        render.setAlbum(img);
-      }
+      if (this.flowBg !== render || this.flowAlbumWant !== u || this.flowAlbumGen !== gen) return;
+      this.flowAlbumApplied = u;
+      this.flowAlbumErrors = 0;
+      this.flowAlbumRetries = 0;
+      render.setAlbum(img);
     };
     img.onerror = () => {
-      if (this.flowBg !== render) return;
+      if (this.flowBg !== render || this.flowAlbumWant !== u || this.flowAlbumGen !== gen) return;
+      this.flowAlbumWant = '';
+      this.flowAlbumBadUrl = u;
+      this.flowAlbumBadGen = gen;
+      /* one unreadable cover must not cost the user the whole fluid background:
+         keep the palette that is up and retry shortly — a burst of skipped
+         tracks can starve a crossOrigin fetch even though the artwork itself is
+         perfectly fine. */
+      if (this.flowAlbumApplied) {
+        LOG('flow background: cover not readable, keeping previous palette', u);
+        this.retryFlowAlbum(u, gen);
+        return;
+      }
       this.flowAlbumErrors = (this.flowAlbumErrors || 0) + 1;
       LOG('flow background: cover not readable, attempt', this.flowAlbumErrors);
-      if (this.flowAlbumErrors < 3) return;
-      /* the CDN refuses cross-origin reads: drop back to the blurred artwork */
+      if (this.flowAlbumErrors < 3) {
+        this.retryFlowAlbum(u, gen);
+        return;
+      }
+      /* only when nothing has ever loaded does the CDN look
+         cross-origin-hostile, and then the blurred artwork is the fallback. */
       this.flowBgFailed = true;
       this.flowBg = null;
-      this.flowAlbumUrl = null;
+      this.flowAlbumBadUrl = '';
+      this.flowAlbumBadGen = -1;
       try {
         render.dispose();
       } catch (e) {}
       this.paintTheme();
     };
     img.src = u;
+  }
+
+  /* a single delayed retry for a cover that failed while its track was current,
+     so a transient hiccup heals itself instead of leaving the previous track's
+     palette up until the user happens to switch away and back. */
+  retryFlowAlbum(url, gen) {
+    if (this.flowAlbumRetryGen !== gen) {
+      this.flowAlbumRetryGen = gen;
+      this.flowAlbumRetries = 0;
+    }
+    if (this.flowAlbumRetries >= 2) return;
+    this.flowAlbumRetries += 1;
+    clearTimeout(this.flowAlbumRetryTimer);
+    this.flowAlbumRetryTimer = setTimeout(() => {
+      if ((this.__trackGen || 0) !== gen || !this.flowActive) return;
+      if (this.flowAlbumApplied === url) return;
+      this.flowAlbumBadUrl = '';
+      this.flowAlbumBadGen = -1;
+      this.setFlowAlbum(url);
+    }, 1500);
   }
 
   tick() {
@@ -1359,7 +1641,9 @@ class SodaAmll {
       let t = this.playing ? this.baseMs + (now - this.baseAt) : this.baseMs;
       if (this.durationMs) t = Math.min(t, this.durationMs);
       this.player.setCurrentTime(t);
-      this.player.update(delta);
+      /* the player walks every lyric group on every frame; while the column is
+         folded away there is nothing on screen to animate, so skip the pass. */
+      if (this.hasLyric && !this.__nolyric) this.player.update(delta);
     }
     if (this.settings.showFps && this.fpsEl) {
       this.__fpsFrames = (this.__fpsFrames || 0) + 1;
@@ -1386,6 +1670,11 @@ class SodaAmll {
     this.open = true;
     /* the root only exists from here on, so settings-driven classes land now */
     this.applySettings();
+    /* opening the page should not animate the lyric column into place, so snap
+       the fold state to the current track before the sheet slides up */
+    this.__nolyric = !this.hasLyric;
+    this.__foldToken = (this.__foldToken || 0) + 1;
+    this.root.classList.toggle('sa-nolyric', this.__nolyric);
     this.root.classList.remove('sa-open');
     void this.root.offsetWidth;
     this.root.classList.add('sa-open');
@@ -1396,6 +1685,10 @@ class SodaAmll {
     this.paintProgress();
     this.refreshPlayOrder();
     if (this.player) {
+      /* a track that changed while the page was closed parked its lines instead
+         of building a view nobody could see; build it now, before the sheet
+         finishes sliding up, so the first visible frame is already correct. */
+      if (this.__linesDirty || !this.__pushed) this.pushLyricLines(this.__lines || [], true);
       this.player.setCurrentTime(this.baseMs, true);
       this.player.resume();
       if (!this.playing) this.player.pause();
@@ -1790,7 +2083,7 @@ class SodaAmll {
       { page: 'bg', group: 'flow', type: 'range', key: 'bgFlowSpeed', label: '流体速度', hint: '颜色流动的快慢，默认 1.00', min: 0.1, max: 4, step: 0.05, fmt: (v) => v.toFixed(2) },
       { page: 'bg', group: 'flow', type: 'range', key: 'bgRenderScale', label: '渲染精度', hint: '流体背景的渲染比例，越低越省性能', min: 0.2, max: 1, step: 0.05, fmt: (v) => `${Math.round(v * 100)}%` },
       { page: 'bg', group: 'flow', type: 'range', key: 'bgFps', label: '渲染帧率', hint: '流体背景动画帧率，0 为静止', min: 0, max: 60, step: 1, fmt: (v) => (v ? `${Math.round(v)} FPS` : '静止') },
-      { page: 'bg', group: 'flow', type: 'switch', key: 'bgPerf', label: '性能模式', hint: '降低背景分辨率与帧率，并关闭歌词模糊和缩放，老机型更流畅' },
+      { page: 'bg', group: 'flow', type: 'switch', key: 'bgPerf', label: '性能模式', hint: '降低背景分辨率与帧率，并关闭歌词模糊、缩放与弹簧动画，老机型更流畅' },
       { page: 'bg', group: 'tune', type: 'range', key: 'bgBlur', label: '背景模糊', hint: '模糊封面模式下的柔和程度', min: 0, max: 200, step: 2, fmt: (v) => `${Math.round(v)}px` },
       { page: 'bg', group: 'tune', type: 'range', key: 'bgBrightness', label: '背景亮度', hint: '默认 0.55', min: 0.15, max: 1.2, step: 0.01, fmt: (v) => v.toFixed(2) },
       { page: 'bg', group: 'tune', type: 'range', key: 'bgSaturate', label: '背景饱和度', hint: '默认 1.90', min: 0.5, max: 3, step: 0.05, fmt: (v) => v.toFixed(2) },
@@ -2049,16 +2342,31 @@ class SodaAmll {
     this.applySettings();
   }
 
+  /* applySettings runs on every slider `input` event, so a var is only pushed
+     when its value really moved. Rewriting an unchanged one is not free: the
+     lyric weight/size vars re-lay-out the whole lyric view, and the background
+     vars re-composite a full-screen blur, so dragging an unrelated slider used
+     to stutter. */
+  setVar(prop, value) {
+    const vars = this.__cssVars || (this.__cssVars = {});
+    if (vars[prop] === value) return;
+    vars[prop] = value;
+    document.documentElement.style.setProperty(prop, value);
+  }
+
   applyFontScale() {
     if (!this.player) return;
     const el = this.player.getElement();
     if (!el) return;
     const scale = this.settings.lyricFontScale;
-    el.style.setProperty('--amll-lp-font-size', `calc(max(max(5vh, 2.5vw), 12px) * ${scale})`);
+    const value = `calc(max(max(5vh, 2.5vw), 12px) * ${scale})`;
+    if (this.__fontScale === value) return;
+    this.__fontScale = value;
+    el.style.setProperty('--amll-lp-font-size', value);
   }
 
   applyBarCover() {
-    document.documentElement.style.setProperty('--sa-bar-cover', cssUrl(this.cover));
+    this.setVar('--sa-bar-cover', cssUrl(this.cover));
   }
 
   applySettings() {
@@ -2070,28 +2378,24 @@ class SodaAmll {
     if (s.barStyle === 'off') html.removeAttribute('data-sa-bar');
     else html.setAttribute('data-sa-bar', s.barStyle);
     html.setAttribute('data-sa-font', s.lyricFont);
-    html.style.setProperty('--sa-bar-a', String(s.barOpacity));
-    html.style.setProperty('--sa-bar-blur', `${Math.round(s.barBlur)}px`);
-    html.style.setProperty('--sa-bar-cover-a', String(s.barCover));
-    html.style.setProperty('--sa-lyric-weight', String(s.lyricWeight));
-    html.style.setProperty('--sa-word-bright', String(s.wordBright));
-    html.style.setProperty('--sa-bg-blur', `${Math.round(s.bgBlur)}px`);
-    html.style.setProperty('--sa-bg-sat', s.bgSaturate.toFixed(2));
-    html.style.setProperty('--sa-bg-bright', s.bgBrightness.toFixed(2));
+    this.setVar('--sa-bar-a', String(s.barOpacity));
+    this.setVar('--sa-bar-blur', `${Math.round(s.barBlur)}px`);
+    this.setVar('--sa-bar-cover-a', String(s.barCover));
+    this.setVar('--sa-lyric-weight', String(s.lyricWeight));
+    this.setVar('--sa-word-bright', String(s.wordBright));
+    this.setVar('--sa-bg-blur', `${Math.round(s.bgBlur)}px`);
+    this.setVar('--sa-bg-sat', s.bgSaturate.toFixed(2));
+    this.setVar('--sa-bg-bright', s.bgBrightness.toFixed(2));
 
-    if (this.root) {
+    if (this.root && this.el) {
       this.root.classList.toggle('sa-noanim', !s.lyricTransition);
       this.root.classList.toggle('sa-fps-on', !!s.showFps);
-      const cover = this.root.querySelector('.sa-cover-wrap');
+      const cover = this.el.coverWrap;
       if (cover) cover.classList.toggle('sa-nocursor', !!s.coverHideCursor);
-      const bg = this.root.querySelector('.sa-bg');
-      if (bg) bg.style.display = s.bgEnabled ? '' : 'none';
-      const flow = this.root.querySelector('.sa-flow');
-      if (flow) flow.style.display = s.bgEnabled ? '' : 'none';
-      const tint = this.root.querySelector('.sa-tint');
-      if (tint) tint.style.display = s.bgEnabled ? '' : 'none';
-      const vig = this.root.querySelector('.sa-vignette');
-      if (vig) vig.style.display = s.bgEnabled ? '' : 'none';
+      const show = s.bgEnabled ? '' : 'none';
+      for (const node of [this.el.bg, this.el.flow, this.el.tint, this.el.vignette]) {
+        if (node) node.style.display = show;
+      }
     }
     if (this.player) {
       const perf = !!s.bgPerf;
@@ -2100,6 +2404,9 @@ class SodaAmll {
         scale: perf ? false : !!s.lyricScale,
         wordFade: s.wordFade,
         hidePassed: !!s.hidePassed,
+        /* spring physics walks every line on every frame; the CSS-transition
+           fallback is markedly cheaper and is exactly what this preset is for */
+        springs: !perf,
       };
       /* Each of these rebuilds the whole lyric view (wordFade regenerates the
          mask of every line), which costs seconds on a long song. applySettings
@@ -2109,6 +2416,7 @@ class SodaAmll {
       if (cur.scale !== want.scale) { cur.scale = want.scale; this.player.setEnableScale(want.scale); }
       if (cur.wordFade !== want.wordFade) { cur.wordFade = want.wordFade; this.player.setWordFadeWidth(want.wordFade); }
       if (cur.hidePassed !== want.hidePassed) { cur.hidePassed = want.hidePassed; this.player.setHidePassedLines(want.hidePassed); }
+      if (cur.springs !== want.springs) { cur.springs = want.springs; this.player.setEnableSpring(want.springs); }
     }
     this.applyFontScale();
     this.applyBarCover();
