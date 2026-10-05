@@ -172,7 +172,7 @@ function Get-ClientInfo {
       if ($j.version) { $info.PluginVersion = [string]$j.version }
     } catch {}
   }
-  if (-not $info.PluginVersion) { $info.PluginVersion = '1.0.0' }
+  if (-not $info.PluginVersion) { $info.PluginVersion = '1.1.0' }
 
   if ($info.Verified) {
     $info.CompatLevel = 'verified'
@@ -238,7 +238,7 @@ function Invoke-AmllInstall {
 
   [pscustomobject]@{
     plugin    = 'soda-amll-lyrics'
-    version   = '1.0.0'
+    version   = '1.1.0'
     installed = (Get-Date).ToString('s')
     appDir    = $AppDir
     asar      = $asarPath
