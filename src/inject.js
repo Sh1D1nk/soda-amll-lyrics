@@ -45,6 +45,10 @@ const DEFAULT_SETTINGS = {
   /* low-spec preset: caps the background's resolution/frame rate and turns off
      the heaviest lyric effects, for machines that cannot hold 60fps */
   bgPerf: false,
+  /* adaptive quality: measure the overlay's own frame rate and step the heavy
+     effects down — then back up — on its own, so a slow machine stays usable
+     without the user having to find the low-spec preset */
+  adaptiveQuality: true,
 
   /* lyric player */
   lyricBlur: true,
@@ -90,6 +94,7 @@ function loadSettings() {
   s.bgBrightness = clamp(Number(s.bgBrightness), 0.15, 1.2);
   s.bgSaturate = clamp(Number(s.bgSaturate), 0.5, 3);
   s.bgPerf = !!s.bgPerf;
+  s.adaptiveQuality = s.adaptiveQuality !== false;
   s.wordFade = clamp(Number(s.wordFade), 0.0001, 1.5);
   return s;
 }
@@ -575,6 +580,9 @@ class SodaAmll {
     this.raf = 0;
     this.baseMs = 0;
     this.baseAt = 0;
+    /* last progress value folded into the clock anchor; lets onState() tell a
+       genuinely new report from the same coarse value being re-broadcast */
+    this.__reportMs = void 0;
     this.durationMs = 0;
     this.playing = false;
     this.trackKey = null;
@@ -604,6 +612,15 @@ class SodaAmll {
     this.dragState = null;
     this.playOrder = null;
     this.queueApi = undefined;
+    /* the frame callback is created once and reused: `requestAnimationFrame(() =>
+       this.tick())` allocated a fresh closure on every frame (~60 short-lived
+       functions a second), which is pure GC churn for no benefit. */
+    this.__tickFn = () => this.tick();
+    /* derived-string caches for paintMeta(), which runs on every transport
+       message: keyed on the source field's identity, so the template literal and
+       the map/join are only rebuilt when the payload really changed */
+    this.__coverText = '';
+    this.__artistsText = '';
   }
 
   /* ---- data feed ---- */
@@ -634,12 +651,31 @@ class SodaAmll {
 
   onState(s) {
     const now = performance.now();
+    /* the clock's current reading, taken before this message is folded in */
     const est = this.playing ? this.baseMs + (now - this.baseAt) : this.baseMs;
     this.durationMs = (s.durationSeconds || 0) * 1000;
     const raw = (s.progressSeconds || 0) * 1000;
     const ms = this.durationMs ? Math.min(raw, this.durationMs) : raw;
-    this.baseMs = ms;
-    this.baseAt = now;
+
+    const md = s.mediaDetail;
+    const key = md && md.playable ? md.playable.key || md.playable.id : null;
+    const trackChanged = !!(key && key !== this.trackKey);
+    if (trackChanged) this.trackKey = key;
+
+    /* progressSeconds is a coarse value that the host re-broadcasts alongside
+       every unrelated player-state change (play/pause, volume, queue…), so
+       anchoring the clock on each message pins it to the last reported tick and
+       the interpolation never advances — the lyrics then trail the audio. Only
+       re-anchor when the reported value actually moves, and drop the odd
+       out-of-order report that trails the live clock by under half a second. */
+    if (trackChanged) this.__reportMs = void 0;
+    if (this.__reportMs === void 0 || ms !== this.__reportMs) {
+      this.__reportMs = ms;
+      if (trackChanged || !(ms < est && est - ms < 500)) {
+        this.baseMs = ms;
+        this.baseAt = now;
+      }
+    }
 
     const wasPlaying = this.playing;
     this.playing = !!s.isPlaying && !s.isLoading;
@@ -659,10 +695,6 @@ class SodaAmll {
       this.paintVolume();
     }
 
-    const md = s.mediaDetail;
-    const key = md && md.playable ? md.playable.key || md.playable.id : null;
-    const trackChanged = !!(key && key !== this.trackKey);
-    if (trackChanged) this.trackKey = key;
     /* store the state before applyTrack runs: it paints the metadata, and doing
        that against the previous state made the first paint of a new track show
        the old artwork until the next message corrected it. */
@@ -723,8 +755,12 @@ class SodaAmll {
   pushLyricLines(lines, seek) {
     this.__linesDirty = false;
     this.__pushed = true;
-    this.player.setLyricLines(lines, this.baseMs);
-    if (seek) this.player.setCurrentTime(this.baseMs, true);
+    /* seed with the live interpolated time, not the raw anchor: the anchor can
+       be up to a report period stale, and seeding from it makes the freshly
+       built view jump backwards for one frame before catching up. */
+    const t = this.playing ? this.baseMs + (performance.now() - this.baseAt) : this.baseMs;
+    this.player.setLyricLines(lines, t);
+    if (seek) this.player.setCurrentTime(t, true);
     /* Building the view is cheap (a few ms); the expensive frame is the first one
        that animates it, where every freshly built line must be styled and painted
        at once. That lands as a single long task and, if it fires mid-slide, is
@@ -829,6 +865,13 @@ class SodaAmll {
       vfill: root.querySelector('.sa-vfill'),
       vlow: root.querySelector('.sa-vlow'),
     };
+    /* the overlay DOM is built once per session, but __coverUrl may already hold
+       this track's url from the applyTrack() that ran while the page was closed
+       and this.el was still null. applyCover() short-circuits on that cache, so
+       the freshly created <img> would never get a src (blank artwork until the
+       next track change). Drop the cache so the applyTrack() at the end of this
+       method paints it for real. */
+    this.__coverUrl = '';
 
     this.player = new LyricPlayer();
     root.querySelector('.sa-lyric').appendChild(this.player.getElement());
@@ -1245,15 +1288,20 @@ class SodaAmll {
       this.__pct = pct;
       el.progressFill.style.transform = `scaleX(${pct})`;
     }
-    const cur = fmtTime(ms / 1000);
-    if (cur !== this.__tCur) {
-      this.__tCur = cur;
-      el.tCur.textContent = cur;
+    /* Both labels only ever change when the second they display rolls over, so
+       the remaining ~59 frames only need the cheap integer compare. Each label
+       keeps its own boundary: the countdown flips at (duration - n)s, which is a
+       different instant from the elapsed label when the duration is not a whole
+       number of seconds. */
+    const sec = Math.floor(ms / 1000);
+    if (sec !== this.__sec) {
+      this.__sec = sec;
+      el.tCur.textContent = fmtTime(sec);
     }
-    const dur = this.durationMs ? `-${fmtTime((this.durationMs - ms) / 1000)}` : '-0:00';
-    if (dur !== this.__tDur) {
-      this.__tDur = dur;
-      el.tDur.textContent = dur;
+    const rem = this.durationMs ? Math.floor((this.durationMs - ms) / 1000) : 0;
+    if (rem !== this.__rem) {
+      this.__rem = rem;
+      el.tDur.textContent = this.durationMs ? `-${fmtTime(rem)}` : '-0:00';
     }
   }
 
@@ -1382,7 +1430,11 @@ class SodaAmll {
     const pl = md.playable || {};
     /* the app often pushes the track meta before the artwork url arrives, so
        the cover is re-derived here instead of only on track change. */
-    const cover = coverUrl(pl.cover_url);
+    if (pl.cover_url !== this.__coverSrc) {
+      this.__coverSrc = pl.cover_url;
+      this.__coverText = coverUrl(pl.cover_url);
+    }
+    const cover = this.__coverText;
     if (cover) this.applyCover(cover);
 
     const name = pl.name || '';
@@ -1390,7 +1442,13 @@ class SodaAmll {
       this.__name = name;
       el.name.textContent = name;
     }
-    const artist = (pl.artists || []).map((a) => a.name).join(' / ');
+    /* artists is an array, so the join allocates a fresh string every call; the
+       payload object is stable between real changes, hence the identity cache */
+    if (pl.artists !== this.__artistsSrc) {
+      this.__artistsSrc = pl.artists;
+      this.__artistsText = (pl.artists || []).map((a) => a.name).join(' / ');
+    }
+    const artist = this.__artistsText;
     if (artist !== this.__artist) {
       this.__artist = artist;
       el.artist.textContent = artist;
@@ -1502,6 +1560,71 @@ class SodaAmll {
     return this.flowBg || null;
   }
 
+  /* ---- adaptive quality ----
+     The overlay has two things worth trading for frame rate without changing
+     anything structural: the fluid background (a full-screen fragment shader on
+     its own render loop) and the lyric player's per-line blur/scale masks.
+     Frames are counted in tick() and judged once a second; the ladder steps down
+     when the budget is missed twice in a row and climbs back only after a long,
+     comfortable stretch — with a latch between steps and a dead band in the
+     middle, so it cannot oscillate. */
+  aqFactors() {
+    const lv = this.settings.adaptiveQuality ? this.__aqLevel || 0 : 0;
+    if (lv >= 3) return { level: 3, fps: 0.35, scale: 0.6, dither: false, lyricLite: true };
+    if (lv === 2) return { level: 2, fps: 0.35, scale: 0.6, dither: false, lyricLite: false };
+    if (lv === 1) return { level: 1, fps: 0.6, scale: 0.8, dither: false, lyricLite: false };
+    return { level: 0, fps: 1, scale: 1, dither: true, lyricLite: false };
+  }
+
+  /* judges the frame window that just closed; only ever called while the page is
+     visible, so a throttled background window can never look like a slow GPU */
+  sampleFrameRate(now) {
+    const at = this.__aqAt || 0;
+    if (!at) return;
+    const dt = now - at;
+    if (dt < 1000) return;
+    const frames = this.__aqFrames || 0;
+    this.__aqFrames = 0;
+    this.__aqAt = now;
+    /* a window much longer than a second means the loop was not running at all
+       (window hidden, machine asleep) — throw that sample away */
+    if (dt > 1500) return;
+    if (!this.settings.adaptiveQuality) return;
+    const fps = (frames * 1000) / dt;
+    /* steps are latched, so even a pathological stretch costs at most one change
+       per ten seconds and the picture never flickers between two presets */
+    if (now - (this.__aqStepAt || 0) < 10000) return;
+    const lv = this.__aqLevel || 0;
+    if (fps < 45) {
+      this.__aqGood = 0;
+      this.__aqBad = (this.__aqBad || 0) + 1;
+      if (this.__aqBad >= 2 && lv < 3) this.setAqLevel(lv + 1);
+    } else if (fps > 57) {
+      this.__aqBad = 0;
+      this.__aqGood = (this.__aqGood || 0) + 1;
+      if (this.__aqGood >= 8 && lv > 0) this.setAqLevel(lv - 1);
+    } else {
+      /* the dead band clears both streaks without counting as evidence either way */
+      this.__aqBad = 0;
+      this.__aqGood = 0;
+    }
+  }
+
+  setAqLevel(lv) {
+    if ((this.__aqLevel || 0) === lv) return;
+    this.__aqLevel = lv;
+    this.__aqStepAt = performance.now();
+    this.__aqBad = 0;
+    this.__aqGood = 0;
+    LOG('adaptive quality -> level', lv);
+    this.applyFlowSettings();
+    /* the deepest stage also rides on the lyric-effect switches, which live in
+       applySettings()'s player-option diff; that diff is guarded field by field,
+       so re-running it costs nothing when only the level moved */
+    this.applySettings();
+    this.toast(lv ? `已自动降低特效（档位 ${lv} / 3）` : '已恢复完整特效');
+  }
+
   applyFlowSettings() {
     const render = this.flowBg;
     if (!render) return;
@@ -1511,15 +1634,19 @@ class SodaAmll {
     const fps = clamp(Math.round(Number(s.bgFps)) || 0, 0, 60);
     /* performance mode caps both the raster resolution and the frame rate and
        drops the shader's dither pass: the cheapest way to help an integrated
-       GPU keep a steady picture. */
-    const effScale = perf ? Math.min(scale, 0.35) : scale;
+       GPU keep a steady picture. Adaptive quality rides on top of whatever the
+       user picked — it multiplies those numbers rather than replacing them, never
+       un-freezes an explicit "静态" choice (fps 0) and never lifts the preset's
+       ceilings. */
+    const aq = this.aqFactors();
+    const effScale = clamp((perf ? Math.min(scale, 0.35) : scale) * aq.scale, 0.2, 1);
     const speed = clamp(Number(s.bgFlowSpeed) || 1, 0.1, 4);
     /* fps 0 means "hold still": the renderer's rAF loop only exits on its own
        once static mode is on, so drive it from there instead of a 0 interval. */
     const base = fps > 0 ? fps : 30;
-    const effFps = perf ? Math.min(base, 24) : base;
+    const effFps = Math.max(8, Math.round((perf ? Math.min(base, 24) : base) * aq.fps));
     const staticMode = fps <= 0;
-    const dithering = !perf;
+    const dithering = !perf && aq.dither;
     /* setRenderScale reallocates the render target, so applySettings (which runs
        on every slider tick) must not push these again unless they really moved. */
     const cur = this.__flowOpts || (this.__flowOpts = {});
@@ -1637,6 +1764,14 @@ class SodaAmll {
     if (!this.lastTick) this.lastTick = now;
     const delta = Math.min(now - this.lastTick, 100);
     this.lastTick = now;
+    /* adaptive-quality probe: two integer increments per frame, judged once a
+       second. Skipped while the page is hidden, where a throttled rAF would
+       otherwise look exactly like a machine that cannot keep up. */
+    if (!document.hidden) {
+      this.__aqFrames = (this.__aqFrames || 0) + 1;
+      if (!this.__aqAt) this.__aqAt = now;
+      this.sampleFrameRate(now);
+    }
     if (this.player) {
       let t = this.playing ? this.baseMs + (now - this.baseAt) : this.baseMs;
       if (this.durationMs) t = Math.min(t, this.durationMs);
@@ -1656,7 +1791,7 @@ class SodaAmll {
       }
     }
     this.paintProgress();
-    this.raf = requestAnimationFrame(() => this.tick());
+    this.raf = requestAnimationFrame(this.__tickFn);
   }
 
   show() {
@@ -1689,18 +1824,30 @@ class SodaAmll {
          of building a view nobody could see; build it now, before the sheet
          finishes sliding up, so the first visible frame is already correct. */
       if (this.__linesDirty || !this.__pushed) this.pushLyricLines(this.__lines || [], true);
-      this.player.setCurrentTime(this.baseMs, true);
+      /* seed from the live clock, not the raw anchor — see pushLyricLines() */
+      const live = this.playing ? this.baseMs + (performance.now() - this.baseAt) : this.baseMs;
+      this.player.setCurrentTime(live, true);
       this.player.resume();
       if (!this.playing) this.player.pause();
     }
+    /* the frame window starts fresh on every open: the slide-up plus the first
+       layout of a rebuilt lyric view is the most expensive second this page will
+       ever have, and judging the adaptive ladder on it would punish every track
+       change instead of an actual slow machine. */
+    this.__aqAt = 0;
+    this.__aqFrames = 0;
     this.lastTick = 0;
     cancelAnimationFrame(this.raf);
-    this.raf = requestAnimationFrame(() => this.tick());
+    this.raf = requestAnimationFrame(this.__tickFn);
   }
 
   hide() {
     this.open = false;
     cancelAnimationFrame(this.raf);
+    if (this.__repaintRaf) {
+      cancelAnimationFrame(this.__repaintRaf);
+      this.__repaintRaf = 0;
+    }
     this.closeMenu();
     this.closeWindow();
     const root = this.root;
@@ -2042,20 +2189,29 @@ class SodaAmll {
   }
 
   /* ---- settings window ---- */
+  /* Both tables below are static, but their callers are not: buildAppForm() and
+     mountAppSettings() read them *inside* loops, so the old getters rebuilt the
+     32-entry schema (and its `fmt` closures) seven times per pass — roughly 220
+     throwaway objects each call, and the settings-page watcher called it again
+     and again. Build once, hand back the same array. */
   settingsNav() {
-    return [
-      { id: 'lyric', name: '歌词' },
-      { id: 'song', name: '歌曲信息' },
-      { id: 'bg', name: '背景' },
-      { id: 'source', name: '歌词源' },
-      { id: 'player', name: '歌词播放器' },
-      { id: 'misc', name: '杂项' },
-      { id: 'debug', name: '调试' },
-    ];
+    if (!this.__nav) {
+      this.__nav = [
+        { id: 'lyric', name: '歌词' },
+        { id: 'song', name: '歌曲信息' },
+        { id: 'bg', name: '背景' },
+        { id: 'source', name: '歌词源' },
+        { id: 'player', name: '歌词播放器' },
+        { id: 'misc', name: '杂项' },
+        { id: 'debug', name: '调试' },
+      ];
+    }
+    return this.__nav;
   }
 
   settingsSchema() {
-    return [
+    if (this.__schema) return this.__schema;
+    return (this.__schema = [
       /* 歌词 */
       { page: 'lyric', group: 'type', type: 'select', key: 'lyricFont', label: '歌词字体', hint: '优先使用本机苹方字体', options: [['pingfang', '苹方'], ['system', '跟随系统']] },
       { page: 'lyric', group: 'type', type: 'range', key: 'lyricFontScale', label: '字号大小', hint: '逐字歌词的基准字号倍数', min: 0.6, max: 2, step: 0.05, fmt: (v) => `${v.toFixed(2)}x` },
@@ -2084,6 +2240,7 @@ class SodaAmll {
       { page: 'bg', group: 'flow', type: 'range', key: 'bgRenderScale', label: '渲染精度', hint: '流体背景的渲染比例，越低越省性能', min: 0.2, max: 1, step: 0.05, fmt: (v) => `${Math.round(v * 100)}%` },
       { page: 'bg', group: 'flow', type: 'range', key: 'bgFps', label: '渲染帧率', hint: '流体背景动画帧率，0 为静止', min: 0, max: 60, step: 1, fmt: (v) => (v ? `${Math.round(v)} FPS` : '静止') },
       { page: 'bg', group: 'flow', type: 'switch', key: 'bgPerf', label: '性能模式', hint: '降低背景分辨率与帧率，并关闭歌词模糊、缩放与弹簧动画，老机型更流畅' },
+      { page: 'bg', group: 'flow', type: 'switch', key: 'adaptiveQuality', label: '自适应降质', hint: '歌词页帧率持续不足时自动降低流体背景与歌词特效，帧率恢复后自动升回' },
       { page: 'bg', group: 'tune', type: 'range', key: 'bgBlur', label: '背景模糊', hint: '模糊封面模式下的柔和程度', min: 0, max: 200, step: 2, fmt: (v) => `${Math.round(v)}px` },
       { page: 'bg', group: 'tune', type: 'range', key: 'bgBrightness', label: '背景亮度', hint: '默认 0.55', min: 0.15, max: 1.2, step: 0.01, fmt: (v) => v.toFixed(2) },
       { page: 'bg', group: 'tune', type: 'range', key: 'bgSaturate', label: '背景饱和度', hint: '默认 1.90', min: 0.5, max: 3, step: 0.05, fmt: (v) => v.toFixed(2) },
@@ -2111,7 +2268,7 @@ class SodaAmll {
 
       /* 调试 */
       { page: 'debug', group: 'main', type: 'debug', key: 'state' },
-    ];
+    ]);
   }
 
   openSettings() {
@@ -2324,6 +2481,7 @@ class SodaAmll {
       ['音量', this.volume == null ? '-' : `${Math.round(this.volume * 100)}%`],
       ['播放模式', this.playOrder == null ? '未获取' : String(this.playOrder)],
       ['歌词行数', this.player ? String((this.player.dataManager.getProcessedLines() || []).length) : '0'],
+      ['自适应档位', this.settings.adaptiveQuality ? `${this.__aqLevel || 0} / 3` : '已关闭'],
     ];
   }
 
@@ -2372,6 +2530,14 @@ class SodaAmll {
   applySettings() {
     const s = this.settings;
     const html = document.documentElement;
+    /* turning the switch off restores full quality right away, and silently:
+       the ladder's steps are an internal correction, not a user action, so the
+       reset must not raise a toast the way a real step change does. */
+    if (!s.adaptiveQuality && this.__aqLevel) {
+      this.__aqLevel = 0;
+      this.__aqBad = 0;
+      this.__aqGood = 0;
+    }
     injectStyle('soda-amll-fontcss', FONT_CSS);
     injectStyle('soda-amll-barcss', BAR_CSS);
     injectStyle('soda-amll-appcss', APP_CSS);
@@ -2399,9 +2565,13 @@ class SodaAmll {
     }
     if (this.player) {
       const perf = !!s.bgPerf;
+      /* the ladder's deepest stage also drops the per-line lyric effects: on an
+         integrated GPU the mask/blur work over every line outweighs the rest of
+         the frame, and it is the only lever left once the background is cheap */
+      const lite = perf || this.aqFactors().lyricLite;
       const want = {
-        blur: perf ? false : !!s.lyricBlur,
-        scale: perf ? false : !!s.lyricScale,
+        blur: lite ? false : !!s.lyricBlur,
+        scale: lite ? false : !!s.lyricScale,
         wordFade: s.wordFade,
         hidePassed: !!s.hidePassed,
         /* spring physics walks every line on every frame; the CSS-transition
@@ -2420,8 +2590,21 @@ class SodaAmll {
     }
     this.applyFontScale();
     this.applyBarCover();
-    this.paintTheme();
-    this.paintMeta();
+    /* The CSS vars above land synchronously so a control the user is dragging
+       still tracks the pointer, but the repaint tail is not a per-event job:
+       applySettings() runs on every `input` event (~60/s while dragging), and
+       each pass re-derives the cover, re-applies the whole background stack and
+       re-touches the metadata. Coalesce it into one pass per frame. */
+    this.scheduleRepaint();
+  }
+
+  scheduleRepaint() {
+    if (this.__repaintRaf) return;
+    this.__repaintRaf = requestAnimationFrame(() => {
+      this.__repaintRaf = 0;
+      this.paintTheme();
+      this.paintMeta();
+    });
   }
 
   /* ---- "插件" section inside the host settings page ---- */
@@ -2435,8 +2618,10 @@ class SodaAmll {
        compare against the expected row count and rebuild when it came out incomplete */
     const existing = document.getElementById('sa-plugin-host');
     if (existing) {
-      const want = this.settingsNav().reduce(
-        (n, p) => n + this.settingsSchema().filter((d) => d.page === p.id && d.type !== 'debug' && d.type !== 'info').length,
+      const nav = this.settingsNav();
+      const schema = this.settingsSchema();
+      const want = nav.reduce(
+        (n, p) => n + schema.filter((d) => d.page === p.id && d.type !== 'debug' && d.type !== 'info').length,
         0
       );
       if (existing.querySelectorAll('.setting-menu-item').length !== want) this.buildAppForm(existing);
@@ -2526,8 +2711,11 @@ class SodaAmll {
       return right;
     };
 
-    for (const navItem of this.settingsNav()) {
-      const defs = this.settingsSchema().filter((d) => d.page === navItem.id && d.type !== 'debug' && d.type !== 'info');
+    /* resolved once: the old loop called settingsSchema() for every nav item */
+    const nav = this.settingsNav();
+    const schema = this.settingsSchema();
+    for (const navItem of nav) {
+      const defs = schema.filter((d) => d.page === navItem.id && d.type !== 'debug' && d.type !== 'info');
       if (!defs.length) continue;
       const gt = document.createElement('div');
       gt.className = 'sa-group-title';

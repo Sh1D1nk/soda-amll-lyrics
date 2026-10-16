@@ -12593,6 +12593,10 @@ void main() {
     /* low-spec preset: caps the background's resolution/frame rate and turns off
        the heaviest lyric effects, for machines that cannot hold 60fps */
     bgPerf: false,
+    /* adaptive quality: measure the overlay's own frame rate and step the heavy
+       effects down — then back up — on its own, so a slow machine stays usable
+       without the user having to find the low-spec preset */
+    adaptiveQuality: true,
     /* lyric player */
     lyricBlur: true,
     lyricScale: true,
@@ -12632,6 +12636,7 @@ void main() {
     s.bgBrightness = clamp2(Number(s.bgBrightness), 0.15, 1.2);
     s.bgSaturate = clamp2(Number(s.bgSaturate), 0.5, 3);
     s.bgPerf = !!s.bgPerf;
+    s.adaptiveQuality = s.adaptiveQuality !== false;
     s.wordFade = clamp2(Number(s.wordFade), 1e-4, 1.5);
     return s;
   }
@@ -13062,6 +13067,7 @@ html[data-sa-bar="blur"] .bottom-player::before{
       this.raf = 0;
       this.baseMs = 0;
       this.baseAt = 0;
+      this.__reportMs = void 0;
       this.durationMs = 0;
       this.playing = false;
       this.trackKey = null;
@@ -13088,6 +13094,9 @@ html[data-sa-bar="blur"] .bottom-player::before{
       this.dragState = null;
       this.playOrder = null;
       this.queueApi = void 0;
+      this.__tickFn = () => this.tick();
+      this.__coverText = "";
+      this.__artistsText = "";
     }
     /* ---- data feed ---- */
     hookTransport() {
@@ -13120,8 +13129,18 @@ html[data-sa-bar="blur"] .bottom-player::before{
       this.durationMs = (s.durationSeconds || 0) * 1e3;
       const raw = (s.progressSeconds || 0) * 1e3;
       const ms = this.durationMs ? Math.min(raw, this.durationMs) : raw;
-      this.baseMs = ms;
-      this.baseAt = now;
+      const md = s.mediaDetail;
+      const key = md && md.playable ? md.playable.key || md.playable.id : null;
+      const trackChanged = !!(key && key !== this.trackKey);
+      if (trackChanged) this.trackKey = key;
+      if (trackChanged) this.__reportMs = void 0;
+      if (this.__reportMs === void 0 || ms !== this.__reportMs) {
+        this.__reportMs = ms;
+        if (trackChanged || !(ms < est && est - ms < 500)) {
+          this.baseMs = ms;
+          this.baseAt = now;
+        }
+      }
       const wasPlaying = this.playing;
       this.playing = !!s.isPlaying && !s.isLoading;
       if (this.player && this.playing !== wasPlaying) {
@@ -13138,10 +13157,6 @@ html[data-sa-bar="blur"] .bottom-player::before{
         if (this.volume > 1e-3) this.volBeforeMute = this.volume;
         this.paintVolume();
       }
-      const md = s.mediaDetail;
-      const key = md && md.playable ? md.playable.key || md.playable.id : null;
-      const trackChanged = !!(key && key !== this.trackKey);
-      if (trackChanged) this.trackKey = key;
       this.state = s;
       if (trackChanged) {
         this.applyTrack(md, Math.abs(ms - est) > 400);
@@ -13179,8 +13194,9 @@ html[data-sa-bar="blur"] .bottom-player::before{
     pushLyricLines(lines, seek) {
       this.__linesDirty = false;
       this.__pushed = true;
-      this.player.setLyricLines(lines, this.baseMs);
-      if (seek) this.player.setCurrentTime(this.baseMs, true);
+      const t = this.playing ? this.baseMs + (performance.now() - this.baseAt) : this.baseMs;
+      this.player.setLyricLines(lines, t);
+      if (seek) this.player.setCurrentTime(t, true);
       try {
         this.player.update(16);
         if (this.el && this.el.lyric) void this.el.lyric.offsetHeight;
@@ -13276,6 +13292,7 @@ html[data-sa-bar="blur"] .bottom-player::before{
         vfill: root.querySelector(".sa-vfill"),
         vlow: root.querySelector(".sa-vlow")
       };
+      this.__coverUrl = "";
       this.player = new DomLyricPlayer();
       root.querySelector(".sa-lyric").appendChild(this.player.getElement());
       this.player.setAlignAnchor(LayoutAlignAnchor.Center);
@@ -13660,15 +13677,15 @@ html[data-sa-bar="blur"] .bottom-player::before{
         this.__pct = pct;
         el.progressFill.style.transform = `scaleX(${pct})`;
       }
-      const cur = fmtTime(ms / 1e3);
-      if (cur !== this.__tCur) {
-        this.__tCur = cur;
-        el.tCur.textContent = cur;
+      const sec = Math.floor(ms / 1e3);
+      if (sec !== this.__sec) {
+        this.__sec = sec;
+        el.tCur.textContent = fmtTime(sec);
       }
-      const dur = this.durationMs ? `-${fmtTime((this.durationMs - ms) / 1e3)}` : "-0:00";
-      if (dur !== this.__tDur) {
-        this.__tDur = dur;
-        el.tDur.textContent = dur;
+      const rem = this.durationMs ? Math.floor((this.durationMs - ms) / 1e3) : 0;
+      if (rem !== this.__rem) {
+        this.__rem = rem;
+        el.tDur.textContent = this.durationMs ? `-${fmtTime(rem)}` : "-0:00";
       }
     }
     /* Single funnel for artwork changes. The display <img>, the blurred layers
@@ -13771,14 +13788,22 @@ html[data-sa-bar="blur"] .bottom-player::before{
       if (!el) return;
       const md = this.state && this.state.mediaDetail || {};
       const pl = md.playable || {};
-      const cover = coverUrl(pl.cover_url);
+      if (pl.cover_url !== this.__coverSrc) {
+        this.__coverSrc = pl.cover_url;
+        this.__coverText = coverUrl(pl.cover_url);
+      }
+      const cover = this.__coverText;
       if (cover) this.applyCover(cover);
       const name = pl.name || "";
       if (name !== this.__name) {
         this.__name = name;
         el.name.textContent = name;
       }
-      const artist = (pl.artists || []).map((a) => a.name).join(" / ");
+      if (pl.artists !== this.__artistsSrc) {
+        this.__artistsSrc = pl.artists;
+        this.__artistsText = (pl.artists || []).map((a) => a.name).join(" / ");
+      }
+      const artist = this.__artistsText;
       if (artist !== this.__artist) {
         this.__artist = artist;
         el.artist.textContent = artist;
@@ -13878,6 +13903,60 @@ html[data-sa-bar="blur"] .bottom-player::before{
       }
       return this.flowBg || null;
     }
+    /* ---- adaptive quality ----
+       The overlay has two things worth trading for frame rate without changing
+       anything structural: the fluid background (a full-screen fragment shader on
+       its own render loop) and the lyric player's per-line blur/scale masks.
+       Frames are counted in tick() and judged once a second; the ladder steps down
+       when the budget is missed twice in a row and climbs back only after a long,
+       comfortable stretch — with a latch between steps and a dead band in the
+       middle, so it cannot oscillate. */
+    aqFactors() {
+      const lv = this.settings.adaptiveQuality ? this.__aqLevel || 0 : 0;
+      if (lv >= 3) return { level: 3, fps: 0.35, scale: 0.6, dither: false, lyricLite: true };
+      if (lv === 2) return { level: 2, fps: 0.35, scale: 0.6, dither: false, lyricLite: false };
+      if (lv === 1) return { level: 1, fps: 0.6, scale: 0.8, dither: false, lyricLite: false };
+      return { level: 0, fps: 1, scale: 1, dither: true, lyricLite: false };
+    }
+    /* judges the frame window that just closed; only ever called while the page is
+       visible, so a throttled background window can never look like a slow GPU */
+    sampleFrameRate(now) {
+      const at = this.__aqAt || 0;
+      if (!at) return;
+      const dt = now - at;
+      if (dt < 1e3) return;
+      const frames = this.__aqFrames || 0;
+      this.__aqFrames = 0;
+      this.__aqAt = now;
+      if (dt > 1500) return;
+      if (!this.settings.adaptiveQuality) return;
+      const fps = frames * 1e3 / dt;
+      if (now - (this.__aqStepAt || 0) < 1e4) return;
+      const lv = this.__aqLevel || 0;
+      if (fps < 45) {
+        this.__aqGood = 0;
+        this.__aqBad = (this.__aqBad || 0) + 1;
+        if (this.__aqBad >= 2 && lv < 3) this.setAqLevel(lv + 1);
+      } else if (fps > 57) {
+        this.__aqBad = 0;
+        this.__aqGood = (this.__aqGood || 0) + 1;
+        if (this.__aqGood >= 8 && lv > 0) this.setAqLevel(lv - 1);
+      } else {
+        this.__aqBad = 0;
+        this.__aqGood = 0;
+      }
+    }
+    setAqLevel(lv) {
+      if ((this.__aqLevel || 0) === lv) return;
+      this.__aqLevel = lv;
+      this.__aqStepAt = performance.now();
+      this.__aqBad = 0;
+      this.__aqGood = 0;
+      LOG("adaptive quality -> level", lv);
+      this.applyFlowSettings();
+      this.applySettings();
+      this.toast(lv ? `\u5DF2\u81EA\u52A8\u964D\u4F4E\u7279\u6548\uFF08\u6863\u4F4D ${lv} / 3\uFF09` : "\u5DF2\u6062\u590D\u5B8C\u6574\u7279\u6548");
+    }
     applyFlowSettings() {
       const render = this.flowBg;
       if (!render) return;
@@ -13885,12 +13964,13 @@ html[data-sa-bar="blur"] .bottom-player::before{
       const perf = !!s.bgPerf;
       const scale = clamp2(Number(s.bgRenderScale) || 0.5, 0.2, 1);
       const fps = clamp2(Math.round(Number(s.bgFps)) || 0, 0, 60);
-      const effScale = perf ? Math.min(scale, 0.35) : scale;
+      const aq = this.aqFactors();
+      const effScale = clamp2((perf ? Math.min(scale, 0.35) : scale) * aq.scale, 0.2, 1);
       const speed = clamp2(Number(s.bgFlowSpeed) || 1, 0.1, 4);
       const base = fps > 0 ? fps : 30;
-      const effFps = perf ? Math.min(base, 24) : base;
+      const effFps = Math.max(8, Math.round((perf ? Math.min(base, 24) : base) * aq.fps));
       const staticMode = fps <= 0;
-      const dithering = !perf;
+      const dithering = !perf && aq.dither;
       const cur = this.__flowOpts || (this.__flowOpts = {});
       if (cur.scale !== effScale) {
         cur.scale = effScale;
@@ -14009,6 +14089,11 @@ html[data-sa-bar="blur"] .bottom-player::before{
       if (!this.lastTick) this.lastTick = now;
       const delta = Math.min(now - this.lastTick, 100);
       this.lastTick = now;
+      if (!document.hidden) {
+        this.__aqFrames = (this.__aqFrames || 0) + 1;
+        if (!this.__aqAt) this.__aqAt = now;
+        this.sampleFrameRate(now);
+      }
       if (this.player) {
         let t = this.playing ? this.baseMs + (now - this.baseAt) : this.baseMs;
         if (this.durationMs) t = Math.min(t, this.durationMs);
@@ -14026,7 +14111,7 @@ html[data-sa-bar="blur"] .bottom-player::before{
         }
       }
       this.paintProgress();
-      this.raf = requestAnimationFrame(() => this.tick());
+      this.raf = requestAnimationFrame(this.__tickFn);
     }
     show() {
       this.ensureDom();
@@ -14052,17 +14137,24 @@ html[data-sa-bar="blur"] .bottom-player::before{
       this.refreshPlayOrder();
       if (this.player) {
         if (this.__linesDirty || !this.__pushed) this.pushLyricLines(this.__lines || [], true);
-        this.player.setCurrentTime(this.baseMs, true);
+        const live = this.playing ? this.baseMs + (performance.now() - this.baseAt) : this.baseMs;
+        this.player.setCurrentTime(live, true);
         this.player.resume();
         if (!this.playing) this.player.pause();
       }
+      this.__aqAt = 0;
+      this.__aqFrames = 0;
       this.lastTick = 0;
       cancelAnimationFrame(this.raf);
-      this.raf = requestAnimationFrame(() => this.tick());
+      this.raf = requestAnimationFrame(this.__tickFn);
     }
     hide() {
       this.open = false;
       cancelAnimationFrame(this.raf);
+      if (this.__repaintRaf) {
+        cancelAnimationFrame(this.__repaintRaf);
+        this.__repaintRaf = 0;
+      }
       this.closeMenu();
       this.closeWindow();
       const root = this.root;
@@ -14375,19 +14467,28 @@ html[data-sa-bar="blur"] .bottom-player::before{
       }, 2200);
     }
     /* ---- settings window ---- */
+    /* Both tables below are static, but their callers are not: buildAppForm() and
+       mountAppSettings() read them *inside* loops, so the old getters rebuilt the
+       32-entry schema (and its `fmt` closures) seven times per pass — roughly 220
+       throwaway objects each call, and the settings-page watcher called it again
+       and again. Build once, hand back the same array. */
     settingsNav() {
-      return [
-        { id: "lyric", name: "\u6B4C\u8BCD" },
-        { id: "song", name: "\u6B4C\u66F2\u4FE1\u606F" },
-        { id: "bg", name: "\u80CC\u666F" },
-        { id: "source", name: "\u6B4C\u8BCD\u6E90" },
-        { id: "player", name: "\u6B4C\u8BCD\u64AD\u653E\u5668" },
-        { id: "misc", name: "\u6742\u9879" },
-        { id: "debug", name: "\u8C03\u8BD5" }
-      ];
+      if (!this.__nav) {
+        this.__nav = [
+          { id: "lyric", name: "\u6B4C\u8BCD" },
+          { id: "song", name: "\u6B4C\u66F2\u4FE1\u606F" },
+          { id: "bg", name: "\u80CC\u666F" },
+          { id: "source", name: "\u6B4C\u8BCD\u6E90" },
+          { id: "player", name: "\u6B4C\u8BCD\u64AD\u653E\u5668" },
+          { id: "misc", name: "\u6742\u9879" },
+          { id: "debug", name: "\u8C03\u8BD5" }
+        ];
+      }
+      return this.__nav;
     }
     settingsSchema() {
-      return [
+      if (this.__schema) return this.__schema;
+      return this.__schema = [
         /* 歌词 */
         { page: "lyric", group: "type", type: "select", key: "lyricFont", label: "\u6B4C\u8BCD\u5B57\u4F53", hint: "\u4F18\u5148\u4F7F\u7528\u672C\u673A\u82F9\u65B9\u5B57\u4F53", options: [["pingfang", "\u82F9\u65B9"], ["system", "\u8DDF\u968F\u7CFB\u7EDF"]] },
         { page: "lyric", group: "type", type: "range", key: "lyricFontScale", label: "\u5B57\u53F7\u5927\u5C0F", hint: "\u9010\u5B57\u6B4C\u8BCD\u7684\u57FA\u51C6\u5B57\u53F7\u500D\u6570", min: 0.6, max: 2, step: 0.05, fmt: (v) => `${v.toFixed(2)}x` },
@@ -14414,6 +14515,7 @@ html[data-sa-bar="blur"] .bottom-player::before{
         { page: "bg", group: "flow", type: "range", key: "bgRenderScale", label: "\u6E32\u67D3\u7CBE\u5EA6", hint: "\u6D41\u4F53\u80CC\u666F\u7684\u6E32\u67D3\u6BD4\u4F8B\uFF0C\u8D8A\u4F4E\u8D8A\u7701\u6027\u80FD", min: 0.2, max: 1, step: 0.05, fmt: (v) => `${Math.round(v * 100)}%` },
         { page: "bg", group: "flow", type: "range", key: "bgFps", label: "\u6E32\u67D3\u5E27\u7387", hint: "\u6D41\u4F53\u80CC\u666F\u52A8\u753B\u5E27\u7387\uFF0C0 \u4E3A\u9759\u6B62", min: 0, max: 60, step: 1, fmt: (v) => v ? `${Math.round(v)} FPS` : "\u9759\u6B62" },
         { page: "bg", group: "flow", type: "switch", key: "bgPerf", label: "\u6027\u80FD\u6A21\u5F0F", hint: "\u964D\u4F4E\u80CC\u666F\u5206\u8FA8\u7387\u4E0E\u5E27\u7387\uFF0C\u5E76\u5173\u95ED\u6B4C\u8BCD\u6A21\u7CCA\u3001\u7F29\u653E\u4E0E\u5F39\u7C27\u52A8\u753B\uFF0C\u8001\u673A\u578B\u66F4\u6D41\u7545" },
+        { page: "bg", group: "flow", type: "switch", key: "adaptiveQuality", label: "\u81EA\u9002\u5E94\u964D\u8D28", hint: "\u6B4C\u8BCD\u9875\u5E27\u7387\u6301\u7EED\u4E0D\u8DB3\u65F6\u81EA\u52A8\u964D\u4F4E\u6D41\u4F53\u80CC\u666F\u4E0E\u6B4C\u8BCD\u7279\u6548\uFF0C\u5E27\u7387\u6062\u590D\u540E\u81EA\u52A8\u5347\u56DE" },
         { page: "bg", group: "tune", type: "range", key: "bgBlur", label: "\u80CC\u666F\u6A21\u7CCA", hint: "\u6A21\u7CCA\u5C01\u9762\u6A21\u5F0F\u4E0B\u7684\u67D4\u548C\u7A0B\u5EA6", min: 0, max: 200, step: 2, fmt: (v) => `${Math.round(v)}px` },
         { page: "bg", group: "tune", type: "range", key: "bgBrightness", label: "\u80CC\u666F\u4EAE\u5EA6", hint: "\u9ED8\u8BA4 0.55", min: 0.15, max: 1.2, step: 0.01, fmt: (v) => v.toFixed(2) },
         { page: "bg", group: "tune", type: "range", key: "bgSaturate", label: "\u80CC\u666F\u9971\u548C\u5EA6", hint: "\u9ED8\u8BA4 1.90", min: 0.5, max: 3, step: 0.05, fmt: (v) => v.toFixed(2) },
@@ -14637,7 +14739,8 @@ html[data-sa-bar="blur"] .bottom-player::before{
         ["\u8FDB\u5EA6", `${fmtTime(this.baseMs / 1e3)} / ${fmtTime(this.durationMs / 1e3)}`],
         ["\u97F3\u91CF", this.volume == null ? "-" : `${Math.round(this.volume * 100)}%`],
         ["\u64AD\u653E\u6A21\u5F0F", this.playOrder == null ? "\u672A\u83B7\u53D6" : String(this.playOrder)],
-        ["\u6B4C\u8BCD\u884C\u6570", this.player ? String((this.player.dataManager.getProcessedLines() || []).length) : "0"]
+        ["\u6B4C\u8BCD\u884C\u6570", this.player ? String((this.player.dataManager.getProcessedLines() || []).length) : "0"],
+        ["\u81EA\u9002\u5E94\u6863\u4F4D", this.settings.adaptiveQuality ? `${this.__aqLevel || 0} / 3` : "\u5DF2\u5173\u95ED"]
       ];
     }
     /* ---- settings plumbing ---- */
@@ -14680,6 +14783,11 @@ html[data-sa-bar="blur"] .bottom-player::before{
     applySettings() {
       const s = this.settings;
       const html = document.documentElement;
+      if (!s.adaptiveQuality && this.__aqLevel) {
+        this.__aqLevel = 0;
+        this.__aqBad = 0;
+        this.__aqGood = 0;
+      }
       injectStyle("soda-amll-fontcss", FONT_CSS);
       injectStyle("soda-amll-barcss", BAR_CSS);
       injectStyle("soda-amll-appcss", APP_CSS);
@@ -14706,9 +14814,10 @@ html[data-sa-bar="blur"] .bottom-player::before{
       }
       if (this.player) {
         const perf = !!s.bgPerf;
+        const lite = perf || this.aqFactors().lyricLite;
         const want = {
-          blur: perf ? false : !!s.lyricBlur,
-          scale: perf ? false : !!s.lyricScale,
+          blur: lite ? false : !!s.lyricBlur,
+          scale: lite ? false : !!s.lyricScale,
           wordFade: s.wordFade,
           hidePassed: !!s.hidePassed,
           /* spring physics walks every line on every frame; the CSS-transition
@@ -14739,8 +14848,15 @@ html[data-sa-bar="blur"] .bottom-player::before{
       }
       this.applyFontScale();
       this.applyBarCover();
-      this.paintTheme();
-      this.paintMeta();
+      this.scheduleRepaint();
+    }
+    scheduleRepaint() {
+      if (this.__repaintRaf) return;
+      this.__repaintRaf = requestAnimationFrame(() => {
+        this.__repaintRaf = 0;
+        this.paintTheme();
+        this.paintMeta();
+      });
     }
     /* ---- "插件" section inside the host settings page ---- */
     mountAppSettings() {
@@ -14751,8 +14867,10 @@ html[data-sa-bar="blur"] .bottom-player::before{
       if (!menu) return;
       const existing = document.getElementById("sa-plugin-host");
       if (existing) {
-        const want = this.settingsNav().reduce(
-          (n, p2) => n + this.settingsSchema().filter((d) => d.page === p2.id && d.type !== "debug" && d.type !== "info").length,
+        const nav2 = this.settingsNav();
+        const schema = this.settingsSchema();
+        const want = nav2.reduce(
+          (n, p2) => n + schema.filter((d) => d.page === p2.id && d.type !== "debug" && d.type !== "info").length,
           0
         );
         if (existing.querySelectorAll(".setting-menu-item").length !== want) this.buildAppForm(existing);
@@ -14837,8 +14955,10 @@ html[data-sa-bar="blur"] .bottom-player::before{
         host.appendChild(row);
         return right;
       };
-      for (const navItem of this.settingsNav()) {
-        const defs = this.settingsSchema().filter((d) => d.page === navItem.id && d.type !== "debug" && d.type !== "info");
+      const nav = this.settingsNav();
+      const schema = this.settingsSchema();
+      for (const navItem of nav) {
+        const defs = schema.filter((d) => d.page === navItem.id && d.type !== "debug" && d.type !== "info");
         if (!defs.length) continue;
         const gt = document.createElement("div");
         gt.className = "sa-group-title";
